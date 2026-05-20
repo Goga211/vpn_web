@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="ru" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f6f7f9" />
+    <title>NorthVPN — стабильный VPN для работы и дома</title>
+    <meta
+      name="description"
+      content="VPN-сервис с быстрым оформлением, удобной подпиской и поддержкой популярных устройств."
+    />
+    <link rel="icon" href="/assets/logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/styles.css" />
+    <script>
+      (function () {
+        var saved = localStorage.getItem("vpn-theme");
+        var dark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.dataset.theme = saved || (dark ? "dark" : "light");
+      })();
+    </script>
+  </head>
+  <body>
+    <header class="site-header">
+      <nav class="nav-shell" aria-label="Основная навигация">
+        <a class="brand-link" href="#top" aria-label="На главную">
+          <img class="brand-logo" src="/assets/logo.svg" alt="" />
+          <span class="brand-text" data-brand>NorthVPN</span>
+        </a>
+
+        <div class="nav-links" aria-label="Разделы">
+          <a href="#features">Преимущества</a>
+          <a href="#services">Сервисы</a>
+          <a href="#pricing">Тарифы</a>
+          <a href="#checkout">Оформить</a>
+        </div>
+
+        <div class="nav-actions">
+          <button class="icon-button" id="themeToggle" type="button" aria-label="Переключить тему" title="Тема">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 4V2m0 20v-2M4.93 4.93 3.52 3.52m16.96 16.96-1.41-1.41M4 12H2m20 0h-2M4.93 19.07l-1.41 1.41M20.48 3.52l-1.41 1.41" />
+              <circle cx="12" cy="12" r="4" />
+            </svg>
+          </button>
+          <a class="button button-ghost support-link" href="https://t.me/your_vpn_support" target="_blank" rel="noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M21 4 3 11.5l7 2.2M21 4l-4.4 16-6.6-6.3M21 4 10 13.7" />
+            </svg>
+            <span>Поддержка</span>
+          </a>
+        </div>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero-section">
+        <div class="container hero-layout">
+          <div class="hero-copy">
+            <p class="eyebrow">Быстрый и стабильный VPN</p>
+            <h1>Подписка выпускается сразу после оплаты</h1>
+            <p class="hero-lead">
+              Выбери тариф, оплати доступ и сразу получи личную страницу подписки для телефона,
+              ноутбука, планшета или роутера.
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#checkout">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M5 12h14M13 6l6 6-6 6" />
+                </svg>
+                <span>Оформить доступ</span>
+              </a>
+              <a class="button button-secondary" href="#pricing">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 7h16M4 12h16M4 17h10" />
+                </svg>
+                <span>Посмотреть тарифы</span>
+              </a>
+            </div>
+            <dl class="hero-metrics" aria-label="Ключевые показатели">
+              <div>
+                <dt>1 клик</dt>
+                <dd>оформление на сайте</dd>
+              </div>
+              <div>
+                <dt>сразу</dt>
+                <dd>ссылка на подписку</dd>
+              </div>
+              <div>
+                <dt>до 10</dt>
+                <dd>устройств на тарифе</dd>
+              </div>
+            </dl>
+          </div>
+
+          <aside class="checkout-preview" aria-label="Схема оформления доступа">
+            <div class="preview-head">
+              <div>
+                <span class="panel-label">Оформление</span>
+                <strong>Доступ готов за минуту</strong>
+              </div>
+              <span class="status-pill"><span></span> Online</span>
+            </div>
+            <div class="flow-steps">
+              <div class="flow-step">
+                <span class="flow-icon">1</span>
+                <div>
+                  <strong>Тариф выбран</strong>
+                  <p>Пользователь оставляет Telegram или email.</p>
+                </div>
+              </div>
+              <div class="flow-step">
+                <span class="flow-icon">2</span>
+                <div>
+                  <strong>Оплата подтверждена</strong>
+                  <p>После оплаты оформление автоматически переходит к выдаче доступа.</p>
+                </div>
+              </div>
+              <div class="flow-step">
+                <span class="flow-icon">3</span>
+                <div>
+                  <strong>Профиль создан</strong>
+                  <p>Срок подписки, лимиты и количество устройств применяются автоматически.</p>
+                </div>
+              </div>
+              <div class="flow-step is-done">
+                <span class="flow-icon">4</span>
+                <div>
+                  <strong>Ссылка готова</strong>
+                  <p>Клиент получает страницу подписки прямо в браузере.</p>
+                </div>
+              </div>
+            </div>
+            <div class="subscription-box">
+              <div>
+                <span class="panel-label">Страница подписки</span>
+                <code>https://vpn.example.com/sub/••••••</code>
+              </div>
+              <button class="icon-button" type="button" aria-label="Скопировать пример ссылки" title="Копировать">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="9" y="9" width="10" height="10" rx="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1" />
+                </svg>
+              </button>
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section-band" id="features">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Почему удобно</p>
+            <h2>Покупка не уводит клиента в ручную обработку</h2>
+          </div>
+          <div class="feature-grid">
+            <article class="card feature-card">
+              <span class="feature-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m13 2-9 13h7l-1 7 9-13h-7l1-7Z" /></svg>
+              </span>
+              <h3>Моментальная выдача</h3>
+              <p>После оплаты личная ссылка подписки появляется сразу на сайте, без ожидания ручной обработки.</p>
+            </article>
+            <article class="card feature-card">
+              <span class="feature-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z" /></svg>
+              </span>
+              <h3>Прозрачные условия</h3>
+              <p>Срок, лимиты и количество устройств закреплены за выбранным тарифом и применяются автоматически.</p>
+            </article>
+            <article class="card feature-card">
+              <span class="feature-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v18H8zM10 18h4M3 7h3v10H3zM18 8h3v8h-3z" /></svg>
+              </span>
+              <h3>Любые устройства</h3>
+              <p>Телефон, ноутбук, планшет, ТВ-приставка или роутер. Клиент выбирает привычное приложение.</p>
+            </article>
+            <article class="card feature-card">
+              <span class="feature-icon">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 18v-6a8 8 0 0 1 16 0v6M4 18h4v-6H4v6Zm12 0h4v-6h-4v6Z" /></svg>
+              </span>
+              <h3>Понятная поддержка</h3>
+              <p>Если что-то пошло не так с выдачей доступа, поддержка быстро найдет оформление и поможет подключиться.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-band alt" id="services">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">Сценарии</p>
+            <h2>Для привычных задач без лишней настройки</h2>
+          </div>
+          <div class="service-grid">
+            <article class="card service-card">
+              <div class="service-mark video">YT</div>
+              <h3>Видео и стриминг</h3>
+              <p>Стабильный маршрут для просмотра видео, трансляций и обучающих платформ.</p>
+            </article>
+            <article class="card service-card">
+              <div class="service-mark social">IG</div>
+              <h3>Соцсети</h3>
+              <p>Подключение для мобильных клиентов и десктопа, без отдельной настройки под каждый сервис.</p>
+            </article>
+            <article class="card service-card">
+              <div class="service-mark work">AI</div>
+              <h3>Рабочие инструменты</h3>
+              <p>Доступ к почте, AI-сервисам, облакам, таск-трекерам и другим ежедневным инструментам.</p>
+            </article>
+            <article class="card service-card">
+              <div class="service-mark travel">EU</div>
+              <h3>Поездки</h3>
+              <p>Когда ты за рубежом, проще сохранять привычный доступ к нужным сайтам и личным кабинетам.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section class="section-band" id="pricing">
+        <div class="container">
+          <div class="section-heading split-heading">
+            <div>
+              <p class="eyebrow">Тарифы</p>
+              <h2>Выбери срок подписки</h2>
+            </div>
+            <p>Старшие тарифы без ограничения трафика. Доступ можно использовать на нескольких устройствах.</p>
+          </div>
+          <div class="pricing-grid" id="pricingGrid" aria-live="polite"></div>
+        </div>
+      </section>
+
+      <section class="section-band alt checkout-section" id="checkout">
+        <div class="container checkout-layout">
+          <div>
+            <p class="eyebrow">Оформление</p>
+            <h2>Оплати доступ и получи ссылку подписки</h2>
+            <p class="muted">
+              Укажи Telegram или email, выбери тариф и заверши оформление. Ссылка появится на этой странице
+              сразу после подтверждения оплаты.
+            </p>
+            <div class="process-list">
+              <div><span>1</span> Пользователь выбирает тариф</div>
+              <div><span>2</span> Оплата подтверждается</div>
+              <div><span>3</span> Доступ активируется</div>
+              <div><span>4</span> Ссылка подписки показывается сразу</div>
+            </div>
+          </div>
+
+          <form class="checkout-form card" id="checkoutForm">
+            <div class="form-alert" id="configNotice" hidden></div>
+            <label>
+              <span>Тариф</span>
+              <select name="planId" id="planSelect" required></select>
+            </label>
+            <div class="form-row">
+              <label>
+                <span>Telegram</span>
+                <input name="telegram" type="text" placeholder="@username" autocomplete="username" />
+              </label>
+              <label>
+                <span>Email</span>
+                <input name="email" type="email" placeholder="name@example.com" autocomplete="email" />
+              </label>
+            </div>
+            <label>
+              <span>Комментарий</span>
+              <textarea name="contact" rows="3" placeholder="Например: нужен доступ на телефон и ноутбук"></textarea>
+            </label>
+            <label class="checkbox-row">
+              <input name="consent" type="checkbox" required />
+              <span>Согласен на оформление доступа и обработку данных для выдачи подписки.</span>
+            </label>
+            <button class="button button-primary form-button" type="submit">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12h14M13 6l6 6-6 6" />
+              </svg>
+              <span>Оплатить и получить ссылку</span>
+            </button>
+            <p class="form-status" id="formStatus" role="status" aria-live="polite"></p>
+          </form>
+        </div>
+      </section>
+
+      <section class="section-band faq-section">
+        <div class="container">
+          <div class="section-heading">
+            <p class="eyebrow">FAQ</p>
+            <h2>Коротко о важном</h2>
+          </div>
+          <div class="faq-grid">
+            <details class="card">
+              <summary>Когда я получу доступ?</summary>
+              <p>Обычно сразу после подтверждения оплаты. Сайт покажет личную ссылку подписки прямо в браузере.</p>
+            </details>
+            <details class="card">
+              <summary>Что делать со ссылкой?</summary>
+              <p>Открой ее на нужном устройстве и импортируй подписку в совместимое VPN-приложение.</p>
+            </details>
+            <details class="card">
+              <summary>Откуда берется ссылка?</summary>
+              <p>Ссылка создается для твоего профиля автоматически и остается доступной на весь срок тарифа.</p>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="container footer-layout">
+        <div>
+          <a class="brand-link" href="#top">
+            <img class="brand-logo" src="/assets/logo.svg" alt="" />
+            <span class="brand-text" data-brand>NorthVPN</span>
+          </a>
+          <p class="muted">Стабильный VPN для работы, общения, поездок и ежедневного доступа к нужным сервисам.</p>
+        </div>
+        <div class="footer-links">
+          <a href="#pricing">Тарифы</a>
+          <a href="#checkout">Оформить</a>
+          <a class="support-link" href="https://t.me/your_vpn_support" target="_blank" rel="noreferrer">Поддержка</a>
+        </div>
+      </div>
+    </footer>
+
+    <dialog class="access-dialog" id="accessDialog">
+      <div class="dialog-head">
+        <h2 id="dialogTitle">Доступ готов</h2>
+        <button class="icon-button" id="dialogClose" type="button" aria-label="Закрыть" title="Закрыть">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18M6 6l12 12" /></svg>
+        </button>
+      </div>
+      <div id="dialogBody"></div>
+    </dialog>
+
+    <script src="/app.js" defer></script>
+  </body>
+</html>

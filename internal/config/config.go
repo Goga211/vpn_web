@@ -1,0 +1,175 @@
+package config
+
+import (
+	"bufio"
+	"os"
+	"strconv"
+	"strings"
+	"time"
+)
+
+type Config struct {
+	Addr                    string
+	PublicBaseURL           string
+	BrandName               string
+	SupportTelegramURL      string
+	SupportEmail            string
+	DataDir                 string
+	RemnawaveBaseURL        string
+	RemnawaveUsername       string
+	RemnawavePassword       string
+	RemnawaveToken          string
+	RemnawaveTag            string
+	RemnawaveInternalSquads []string
+	RemnawaveRequestTimeout time.Duration
+	PaymentStubEnabled      bool
+}
+
+func Load() Config {
+	_ = loadDotEnv(".env")
+
+	return Config{
+		Addr:                    getEnv("APP_ADDR", ":8080"),
+		PublicBaseURL:           strings.TrimRight(getEnv("PUBLIC_BASE_URL", "http://localhost:8080"), "/"),
+		BrandName:               getEnv("SITE_BRAND_NAME", "NorthVPN"),
+		SupportTelegramURL:      getEnv("SUPPORT_TELEGRAM_URL", "https://t.me/your_vpn_support"),
+		SupportEmail:            getEnv("SUPPORT_EMAIL", "support@example.com"),
+		DataDir:                 getEnv("DATA_DIR", "data"),
+		RemnawaveBaseURL:        strings.TrimRight(getEnv("REMNAWAVE_BASE_URL", ""), "/"),
+		RemnawaveUsername:       getEnv("REMNAWAVE_USERNAME", ""),
+		RemnawavePassword:       getEnv("REMNAWAVE_PASSWORD", ""),
+		RemnawaveToken:          getEnv("REMNAWAVE_TOKEN", ""),
+		RemnawaveTag:            normalizeTag(getEnv("REMNAWAVE_USER_TAG", "WEB")),
+		RemnawaveInternalSquads: getCSVEnv("REMNAWAVE_INTERNAL_SQUADS"),
+		RemnawaveRequestTimeout: getDurationEnv("REMNAWAVE_TIMEOUT", 12*time.Second),
+		PaymentStubEnabled:      getBoolEnv("PAYMENT_STUB_ENABLED", getBoolEnv("PAYMENT_STUB_PUBLIC_MOCK_ENABLED", true)),
+	}
+}
+
+func loadDotEnv(path string) error {
+	file, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		line := strings.TrimSpace(scanner.Text())
+		if line == "" || strings.HasPrefix(line, "#") {
+			continue
+		}
+		line = strings.TrimPrefix(line, "export ")
+		key, value, ok := strings.Cut(line, "=")
+		if !ok {
+			continue
+		}
+		key = strings.TrimSpace(key)
+		if key == "" {
+			continue
+		}
+		if _, exists := os.LookupEnv(key); exists {
+			continue
+		}
+		_ = os.Setenv(key, parseDotEnvValue(value))
+	}
+	return scanner.Err()
+}
+
+func parseDotEnvValue(value string) string {
+	value = strings.TrimSpace(value)
+	if len(value) < 2 {
+		return value
+	}
+
+	quote := value[0]
+	if (quote != '"' && quote != '\'') || value[len(value)-1] != quote {
+		return value
+	}
+
+	value = value[1 : len(value)-1]
+	if quote == '"' {
+		value = strings.ReplaceAll(value, `\n`, "\n")
+		value = strings.ReplaceAll(value, `\"`, `"`)
+		value = strings.ReplaceAll(value, `\\`, `\`)
+	}
+	return value
+}
+
+func (c Config) RemnawaveEnabled() bool {
+	if c.RemnawaveBaseURL == "" {
+		return false
+	}
+	if c.RemnawaveToken != "" {
+		return true
+	}
+	return c.RemnawaveUsername != "" && c.RemnawavePassword != ""
+}
+
+func getEnv(key, fallback string) string {
+	value := strings.TrimSpace(os.Getenv(key))
+	if value == "" {
+		return fallback
+	}
+	return value
+}
+
+func getBoolEnv(key string, fallback bool) bool {
+	raw := strings.TrimSpace(os.Getenv(key))
+	if raw == "" {
+		return fallback
+	}
+	value, err := strconv.ParseBool(raw)
+	if err != nil {
+		return fallback
+	}
+	return value
+}
+
+func getDurationEnv(key string, fallback time.Duration) time.Duration {
+	raw := strings.TrimSpace(os.Getenv(key))
+	if raw == "" {
+		return fallback
+	}
+	value, err := time.ParseDuration(raw)
+	if err != nil {
+		return fallback
+	}
+	return value
+}
+
+func getCSVEnv(key string) []string {
+	raw := strings.TrimSpace(os.Getenv(key))
+	if raw == "" {
+		return nil
+	}
+	parts := strings.Split(raw, ",")
+	values := make([]string, 0, len(parts))
+	for _, part := range parts {
+		part = strings.TrimSpace(part)
+		if part != "" {
+			values = append(values, part)
+		}
+	}
+	return values
+}
+
+func normalizeTag(tag string) string {
+	tag = strings.ToUpper(strings.TrimSpace(tag))
+	if tag == "" {
+		return "WEB"
+	}
+	if len(tag) > 16 {
+		tag = tag[:16]
+	}
+	var b strings.Builder
+	for _, r := range tag {
+		if (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '_' {
+			b.WriteRune(r)
+		}
+	}
+	if b.Len() == 0 {
+		return "WEB"
+	}
+	return b.String()
+}
