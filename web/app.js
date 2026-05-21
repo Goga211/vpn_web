@@ -8,6 +8,8 @@ const state = {
   selectedPlanId: "quarter",
 };
 
+applySavedTheme();
+
 const icons = {
   arrow: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>',
   copy: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="9" width="10" height="10" rx="2" /><path d="M5 15H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1" /></svg>',
@@ -18,6 +20,12 @@ document.addEventListener("DOMContentLoaded", () => {
   bindForms();
   loadInitialData();
 });
+
+function applySavedTheme() {
+  const saved = localStorage.getItem("vpn-theme");
+  const prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  document.documentElement.dataset.theme = saved || (prefersDark ? "dark" : "light");
+}
 
 function bindTheme() {
   const button = document.querySelector("#themeToggle");

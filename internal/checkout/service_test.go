@@ -89,12 +89,39 @@ func TestServiceProvisionsCheckoutAndFallsBackToSubscriptionLookup(t *testing.T)
 	}
 }
 
+func TestServiceRejectsUnsafeSubscriptionURL(t *testing.T) {
+	store, err := NewStore(t.TempDir())
+	if err != nil {
+		t.Fatalf("NewStore() error = %v", err)
+	}
+	client := &fakeRemnawaveClient{
+		enabled:         true,
+		subscriptionURL: "javascript:alert(1)",
+	}
+	service := NewService(store, client, ServiceConfig{RemnawaveTag: "WEB"})
+
+	got, err := service.Start(context.Background(), CreateInput{
+		PlanID:   "quarter",
+		Telegram: "@client",
+	})
+	if !errors.Is(err, ErrSubscriptionURLMissing) {
+		t.Fatalf("Start() error = %v, want ErrSubscriptionURLMissing", err)
+	}
+	if got.Status != StatusFailed {
+		t.Fatalf("status = %q, want %q", got.Status, StatusFailed)
+	}
+	if got.SubscriptionURL != "" {
+		t.Fatalf("subscription URL = %q, want empty", got.SubscriptionURL)
+	}
+}
+
 type fakeRemnawaveClient struct {
 	enabled              bool
 	createCalls          int
 	subscriptionCalls    int
 	createRequest        remnawave.CreateUserRequest
 	subscriptionUsername string
+	subscriptionURL      string
 }
 
 func (f *fakeRemnawaveClient) Enabled() bool {
@@ -110,5 +137,8 @@ func (f *fakeRemnawaveClient) CreateUser(_ context.Context, req remnawave.Create
 func (f *fakeRemnawaveClient) GetSubscriptionByUsername(_ context.Context, username string) (remnawave.Subscription, error) {
 	f.subscriptionCalls++
 	f.subscriptionUsername = username
+	if f.subscriptionURL != "" {
+		return remnawave.Subscription{SubscriptionURL: f.subscriptionURL}, nil
+	}
 	return remnawave.Subscription{SubscriptionURL: "https://subs.example/" + username}, nil
 }

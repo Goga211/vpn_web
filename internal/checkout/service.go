@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/url"
 	"strings"
 	"time"
 
@@ -42,10 +43,6 @@ func (s *Service) RemnawaveEnabled() bool {
 
 func (s *Service) Plans() []Plan {
 	return Plans
-}
-
-func (s *Service) Get(id string) (Checkout, bool) {
-	return s.store.Get(id)
 }
 
 func (s *Service) Start(ctx context.Context, input CreateInput) (Checkout, error) {
@@ -105,7 +102,7 @@ func (s *Service) Provision(ctx context.Context, checkout Checkout) (Checkout, e
 			subscriptionURL = subscription.SubscriptionURL
 		}
 	}
-	if subscriptionURL == "" {
+	if !isHTTPURL(subscriptionURL) {
 		updated, _, updateErr := s.store.Update(checkout.ID, func(checkout Checkout) Checkout {
 			checkout.Status = StatusFailed
 			checkout.Username = username
@@ -123,6 +120,14 @@ func (s *Service) Provision(ctx context.Context, checkout Checkout) (Checkout, e
 		return checkout
 	})
 	return updated, err
+}
+
+func isHTTPURL(rawURL string) bool {
+	parsed, err := url.Parse(strings.TrimSpace(rawURL))
+	if err != nil {
+		return false
+	}
+	return (parsed.Scheme == "https" || parsed.Scheme == "http") && parsed.Host != ""
 }
 
 func (s *Service) markFailed(id, message string) (Checkout, error) {

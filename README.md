@@ -46,10 +46,10 @@ REMNAWAVE_INTERNAL_SQUADS=uuid-1,uuid-2
 Переключатель онлайн-оформления:
 
 ```bash
-PAYMENT_STUB_ENABLED=true
+CHECKOUT_ENABLED=true
 ```
 
-При включенном оформлении сайт создает пользователя через Remnawave API и возвращает ссылку подписки. Старый ключ `PAYMENT_STUB_PUBLIC_MOCK_ENABLED` еще поддерживается для совместимости, но новый основной ключ — `PAYMENT_STUB_ENABLED`.
+При включенном оформлении сайт создает пользователя через Remnawave API и возвращает ссылку подписки. Старые ключи `PAYMENT_STUB_ENABLED` и `PAYMENT_STUB_PUBLIC_MOCK_ENABLED` еще поддерживаются для совместимости, но новый основной ключ — `CHECKOUT_ENABLED`.
 
 ## API
 
@@ -57,7 +57,6 @@ PAYMENT_STUB_ENABLED=true
 - `GET /api/config` — публичный конфиг для фронта.
 - `GET /api/plans` — тарифы.
 - `POST /api/checkout` — оформление и автоматическая выдача подписки через Remnawave.
-- `GET /api/checkout/{id}` — технически проверить результат оформления.
 
 Для production реальный платежный webhook должен вызывать тот же процесс выдачи только после подтвержденной оплаты.
 

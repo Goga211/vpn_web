@@ -22,7 +22,7 @@ type Config struct {
 	RemnawaveTag            string
 	RemnawaveInternalSquads []string
 	RemnawaveRequestTimeout time.Duration
-	PaymentStubEnabled      bool
+	CheckoutEnabled         bool
 }
 
 func Load() Config {
@@ -42,7 +42,7 @@ func Load() Config {
 		RemnawaveTag:            normalizeTag(getEnv("REMNAWAVE_USER_TAG", "WEB")),
 		RemnawaveInternalSquads: getCSVEnv("REMNAWAVE_INTERNAL_SQUADS"),
 		RemnawaveRequestTimeout: getDurationEnv("REMNAWAVE_TIMEOUT", 12*time.Second),
-		PaymentStubEnabled:      getBoolEnv("PAYMENT_STUB_ENABLED", getBoolEnv("PAYMENT_STUB_PUBLIC_MOCK_ENABLED", true)),
+		CheckoutEnabled:         getBoolEnv("CHECKOUT_ENABLED", getBoolEnv("PAYMENT_STUB_ENABLED", getBoolEnv("PAYMENT_STUB_PUBLIC_MOCK_ENABLED", false))),
 	}
 }
 
@@ -159,13 +159,13 @@ func normalizeTag(tag string) string {
 	if tag == "" {
 		return "WEB"
 	}
-	if len(tag) > 16 {
-		tag = tag[:16]
-	}
 	var b strings.Builder
 	for _, r := range tag {
 		if (r >= 'A' && r <= 'Z') || (r >= '0' && r <= '9') || r == '_' {
 			b.WriteRune(r)
+			if b.Len() >= 16 {
+				break
+			}
 		}
 	}
 	if b.Len() == 0 {

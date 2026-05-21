@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"vpn_web/internal/checkout"
@@ -20,7 +21,7 @@ func TestCheckoutRequiresConfiguredRemnawave(t *testing.T) {
 	}
 	remna := remnawave.New(remnawave.Config{})
 	server := NewServer(
-		config.Config{PaymentStubEnabled: true, BrandName: "TestVPN"},
+		config.Config{CheckoutEnabled: true, BrandName: "TestVPN"},
 		checkout.NewService(store, remna, checkout.ServiceConfig{}),
 		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
 	)
@@ -50,6 +51,9 @@ func TestCheckoutRequiresConfiguredRemnawave(t *testing.T) {
 	}
 	if payload.Checkout.Status != checkout.StatusFailed {
 		t.Fatalf("checkout status = %q, want %q", payload.Checkout.Status, checkout.StatusFailed)
+	}
+	if bytes.Contains(rec.Body.Bytes(), []byte("@client")) {
+		t.Fatalf("response leaks user contact: %s", rec.Body.String())
 	}
 }
 
@@ -101,7 +105,7 @@ func TestCheckoutProvisionsUserThroughRemnawave(t *testing.T) {
 	}
 	remnawaveClient := remnawave.New(remnawave.Config{BaseURL: remna.URL, Username: "admin", Password: "secret"})
 	server := NewServer(
-		config.Config{PaymentStubEnabled: true, BrandName: "TestVPN", RemnawaveTag: "WEB"},
+		config.Config{CheckoutEnabled: true, BrandName: "TestVPN", RemnawaveTag: "WEB"},
 		checkout.NewService(store, remnawaveClient, checkout.ServiceConfig{RemnawaveTag: "WEB"}),
 		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
 	)
@@ -131,6 +135,56 @@ func TestCheckoutProvisionsUserThroughRemnawave(t *testing.T) {
 	}
 	if payload.Checkout.SubscriptionURL != "https://subs.example/short-user" {
 		t.Fatalf("subscription URL = %q", payload.Checkout.SubscriptionURL)
+	}
+	if bytes.Contains(rec.Body.Bytes(), []byte("@client")) {
+		t.Fatalf("response leaks user contact: %s", rec.Body.String())
+	}
+}
+
+func TestCheckoutRejectsLongContactFields(t *testing.T) {
+	store, err := checkout.NewStore(t.TempDir())
+	if err != nil {
+		t.Fatalf("NewStore() error = %v", err)
+	}
+	server := NewServer(
+		config.Config{CheckoutEnabled: true, BrandName: "TestVPN"},
+		checkout.NewService(store, remnawave.New(remnawave.Config{}), checkout.ServiceConfig{}),
+		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
+	)
+
+	body := bytes.NewBufferString(`{"planId":"quarter","telegram":"` + strings.Repeat("a", 65) + `","consent":true}`)
+	req := httptest.NewRequest(http.MethodPost, "/api/checkout", body)
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+
+	server.Routes().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d; body = %s", rec.Code, http.StatusBadRequest, rec.Body.String())
+	}
+}
+
+func TestSecurityHeadersAreSet(t *testing.T) {
+	store, err := checkout.NewStore(t.TempDir())
+	if err != nil {
+		t.Fatalf("NewStore() error = %v", err)
+	}
+	server := NewServer(
+		config.Config{CheckoutEnabled: true, BrandName: "TestVPN"},
+		checkout.NewService(store, remnawave.New(remnawave.Config{}), checkout.ServiceConfig{}),
+		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
+	)
+
+	req := httptest.NewRequest(http.MethodGet, "/api/config", nil)
+	rec := httptest.NewRecorder()
+
+	server.Routes().ServeHTTP(rec, req)
+
+	if got := rec.Header().Get("Content-Security-Policy"); got == "" {
+		t.Fatal("Content-Security-Policy header is empty")
+	}
+	if got := rec.Header().Get("X-Frame-Options"); got != "DENY" {
+		t.Fatalf("X-Frame-Options = %q, want DENY", got)
 	}
 }
 

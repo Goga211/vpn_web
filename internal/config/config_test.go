@@ -51,3 +51,14 @@ func TestGetCSVEnvTrimsEmptyValues(t *testing.T) {
 		}
 	}
 }
+
+func TestLoadUsesCheckoutEnabledOverLegacyPaymentFlags(t *testing.T) {
+	t.Setenv("CHECKOUT_ENABLED", "false")
+	t.Setenv("PAYMENT_STUB_ENABLED", "true")
+	t.Setenv("PAYMENT_STUB_PUBLIC_MOCK_ENABLED", "true")
+
+	cfg := Load()
+	if cfg.CheckoutEnabled {
+		t.Fatal("CheckoutEnabled = true, want false from CHECKOUT_ENABLED")
+	}
+}

@@ -54,7 +54,10 @@ type Store struct {
 }
 
 func NewStore(dataDir string) (*Store, error) {
-	if err := os.MkdirAll(dataDir, 0o755); err != nil {
+	if err := os.MkdirAll(dataDir, 0o700); err != nil {
+		return nil, err
+	}
+	if err := os.Chmod(dataDir, 0o700); err != nil {
 		return nil, err
 	}
 	store := &Store{
@@ -62,6 +65,9 @@ func NewStore(dataDir string) (*Store, error) {
 		checkouts: make(map[string]Checkout),
 	}
 	if err := store.load(); err != nil {
+		return nil, err
+	}
+	if err := chmodIfExists(store.path, 0o600); err != nil {
 		return nil, err
 	}
 	return store, nil
@@ -160,7 +166,7 @@ func (s *Store) saveLocked() error {
 	})
 
 	tmpPath := s.path + ".tmp"
-	file, err := os.OpenFile(tmpPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o644)
+	file, err := os.OpenFile(tmpPath, os.O_CREATE|os.O_TRUNC|os.O_WRONLY, 0o600)
 	if err != nil {
 		return err
 	}
@@ -177,9 +183,17 @@ func (s *Store) saveLocked() error {
 }
 
 func newID() string {
-	var bytes [6]byte
+	var bytes [16]byte
 	if _, err := rand.Read(bytes[:]); err != nil {
 		return fmt.Sprintf("chk_%d", time.Now().UnixNano())
 	}
 	return "chk_" + hex.EncodeToString(bytes[:])
+}
+
+func chmodIfExists(path string, mode os.FileMode) error {
+	err := os.Chmod(path, mode)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	return err
 }

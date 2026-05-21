@@ -14,13 +14,19 @@ import (
 )
 
 type Server struct {
-	cfg      config.Config
-	checkout *checkout.Service
-	logger   *slog.Logger
+	cfg             config.Config
+	checkout        *checkout.Service
+	checkoutLimiter *rateLimiter
+	logger          *slog.Logger
 }
 
 func NewServer(cfg config.Config, checkoutService *checkout.Service, logger *slog.Logger) *Server {
-	return &Server{cfg: cfg, checkout: checkoutService, logger: logger}
+	return &Server{
+		cfg:             cfg,
+		checkout:        checkoutService,
+		checkoutLimiter: newRateLimiter(20, 10*time.Minute),
+		logger:          logger,
+	}
 }
 
 func (s *Server) Routes() http.Handler {
@@ -29,15 +35,13 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("GET /api/config", s.handleConfig)
 	mux.HandleFunc("GET /api/plans", s.handlePlans)
 	mux.HandleFunc("POST /api/checkout", s.handleCheckout)
-	mux.HandleFunc("GET /api/checkout/{id}", s.handleGetCheckout)
 	return withSecurityHeaders(mux)
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, map[string]any{
-		"ok":               true,
-		"remnawaveEnabled": s.checkout.RemnawaveEnabled(),
-		"time":             time.Now().UTC().Format(time.RFC3339),
+		"ok":   true,
+		"time": time.Now().UTC().Format(time.RFC3339),
 	})
 }
 
@@ -47,7 +51,7 @@ func (s *Server) handleConfig(w http.ResponseWriter, r *http.Request) {
 		"supportTelegramUrl":  s.cfg.SupportTelegramURL,
 		"supportEmail":        s.cfg.SupportEmail,
 		"paymentProvider":     "online",
-		"checkoutEnabled":     s.cfg.PaymentStubEnabled,
+		"checkoutEnabled":     s.cfg.CheckoutEnabled,
 		"provisioningEnabled": s.checkout.RemnawaveEnabled(),
 	})
 }
@@ -64,9 +68,19 @@ type checkoutRequest struct {
 	Consent  bool   `json:"consent"`
 }
 
+const (
+	maxTelegramLength = 64
+	maxEmailLength    = 254
+	maxContactLength  = 500
+)
+
 func (s *Server) handleCheckout(w http.ResponseWriter, r *http.Request) {
-	if !s.cfg.PaymentStubEnabled {
+	if !s.cfg.CheckoutEnabled {
 		writeError(w, http.StatusServiceUnavailable, "payment_disabled", "Онлайн-оформление временно недоступно. Напишите в поддержку.")
+		return
+	}
+	if !s.checkoutLimiter.Allow(clientIP(r)) {
+		writeError(w, http.StatusTooManyRequests, "rate_limited", "Слишком много попыток оформления. Попробуйте позже.")
 		return
 	}
 
@@ -83,15 +97,29 @@ func (s *Server) handleCheckout(w http.ResponseWriter, r *http.Request) {
 	req.Contact = strings.TrimSpace(req.Contact)
 	req.Email = strings.TrimSpace(req.Email)
 	req.Telegram = strings.TrimSpace(req.Telegram)
+	if len(req.Telegram) > maxTelegramLength {
+		writeError(w, http.StatusBadRequest, "bad_telegram", "Telegram слишком длинный.")
+		return
+	}
+	if len(req.Email) > maxEmailLength {
+		writeError(w, http.StatusBadRequest, "bad_email", "Email слишком длинный.")
+		return
+	}
+	if len(req.Contact) > maxContactLength {
+		writeError(w, http.StatusBadRequest, "bad_contact", "Комментарий слишком длинный.")
+		return
+	}
 	if _, ok := checkout.FindPlan(req.PlanID); !ok {
 		writeError(w, http.StatusBadRequest, "unknown_plan", "Такой тариф не найден.")
 		return
 	}
 	if req.Email != "" {
-		if _, err := mail.ParseAddress(req.Email); err != nil {
+		addr, err := mail.ParseAddress(req.Email)
+		if err != nil || addr.Address == "" {
 			writeError(w, http.StatusBadRequest, "bad_email", "Email выглядит некорректно.")
 			return
 		}
+		req.Email = addr.Address
 	}
 	if req.Email == "" && req.Telegram == "" {
 		writeError(w, http.StatusBadRequest, "contact_required", "Оставь Telegram или email для профиля и восстановления доступа.")
@@ -110,7 +138,7 @@ func (s *Server) handleCheckout(w http.ResponseWriter, r *http.Request) {
 	}
 
 	writeJSON(w, http.StatusCreated, map[string]any{
-		"checkout": result,
+		"checkout": newCheckoutResponse(result),
 		"payment": map[string]any{
 			"provider": "online",
 			"status":   "paid",
@@ -119,21 +147,11 @@ func (s *Server) handleCheckout(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-func (s *Server) handleGetCheckout(w http.ResponseWriter, r *http.Request) {
-	id := strings.TrimSpace(r.PathValue("id"))
-	checkout, ok := s.checkout.Get(id)
-	if !ok {
-		writeError(w, http.StatusNotFound, "checkout_not_found", "Оформление не найдено.")
-		return
-	}
-	writeJSON(w, http.StatusOK, map[string]any{"checkout": checkout})
-}
-
 func (s *Server) writeCheckoutError(w http.ResponseWriter, result checkout.Checkout, err error) {
 	switch {
 	case errors.Is(err, checkout.ErrRemnawaveNotConfigured):
 		writeJSON(w, http.StatusFailedDependency, map[string]any{
-			"checkout": result,
+			"checkout": newCheckoutResponse(result),
 			"error": map[string]string{
 				"code":    "remnawave_not_configured",
 				"message": "Автоматическая выдача временно недоступна. Напишите в поддержку, и мы поможем оформить доступ.",
@@ -144,12 +162,30 @@ func (s *Server) writeCheckoutError(w http.ResponseWriter, result checkout.Check
 	default:
 		s.logger.Error("checkout failed", "checkout", result.ID, "err", err)
 		writeJSON(w, http.StatusBadGateway, map[string]any{
-			"checkout": result,
+			"checkout": newCheckoutResponse(result),
 			"error": map[string]string{
 				"code":    "provision_failed",
 				"message": "Оплата подтверждена, но доступ не удалось выдать автоматически. Напишите в поддержку.",
 			},
 		})
+	}
+}
+
+type checkoutResponse struct {
+	ID              string `json:"id"`
+	PlanName        string `json:"planName"`
+	PriceRUB        int    `json:"priceRub"`
+	Status          string `json:"status"`
+	SubscriptionURL string `json:"subscriptionUrl,omitempty"`
+}
+
+func newCheckoutResponse(checkout checkout.Checkout) checkoutResponse {
+	return checkoutResponse{
+		ID:              checkout.ID,
+		PlanName:        checkout.PlanName,
+		PriceRUB:        checkout.PriceRUB,
+		Status:          checkout.Status,
+		SubscriptionURL: checkout.SubscriptionURL,
 	}
 }
 
@@ -170,6 +206,10 @@ func writeError(w http.ResponseWriter, status int, code, message string) {
 
 func withSecurityHeaders(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
+		w.Header().Set("Cross-Origin-Opener-Policy", "same-origin")
+		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
+		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
 		w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
