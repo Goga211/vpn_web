@@ -62,3 +62,16 @@ func TestLoadUsesCheckoutEnabledOverLegacyPaymentFlags(t *testing.T) {
 		t.Fatal("CheckoutEnabled = true, want false from CHECKOUT_ENABLED")
 	}
 }
+
+func TestLoadIgnoresExampleRemnawaveBaseURL(t *testing.T) {
+	t.Setenv("REMNAWAVE_BASE_URL", "https://panel.example.com")
+	t.Setenv("REMNAWAVE_TOKEN", "token")
+
+	cfg := Load()
+	if cfg.RemnawaveEnabled() {
+		t.Fatal("RemnawaveEnabled() = true for example placeholder URL")
+	}
+	if cfg.RemnawaveBaseURL != "" {
+		t.Fatalf("RemnawaveBaseURL = %q, want empty", cfg.RemnawaveBaseURL)
+	}
+}

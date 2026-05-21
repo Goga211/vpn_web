@@ -2,6 +2,7 @@ package config
 
 import (
 	"bufio"
+	"net/url"
 	"os"
 	"strconv"
 	"strings"
@@ -27,6 +28,7 @@ type Config struct {
 
 func Load() Config {
 	_ = loadDotEnv(".env")
+	remnawaveBaseURL := normalizeBaseURL(getEnv("REMNAWAVE_BASE_URL", ""))
 
 	return Config{
 		Addr:                    getEnv("APP_ADDR", ":8080"),
@@ -35,7 +37,7 @@ func Load() Config {
 		SupportTelegramURL:      getEnv("SUPPORT_TELEGRAM_URL", "https://t.me/your_vpn_support"),
 		SupportEmail:            getEnv("SUPPORT_EMAIL", "support@example.com"),
 		DataDir:                 getEnv("DATA_DIR", "data"),
-		RemnawaveBaseURL:        strings.TrimRight(getEnv("REMNAWAVE_BASE_URL", ""), "/"),
+		RemnawaveBaseURL:        remnawaveBaseURL,
 		RemnawaveUsername:       getEnv("REMNAWAVE_USERNAME", ""),
 		RemnawavePassword:       getEnv("REMNAWAVE_PASSWORD", ""),
 		RemnawaveToken:          getEnv("REMNAWAVE_TOKEN", ""),
@@ -44,6 +46,26 @@ func Load() Config {
 		RemnawaveRequestTimeout: getDurationEnv("REMNAWAVE_TIMEOUT", 12*time.Second),
 		CheckoutEnabled:         getBoolEnv("CHECKOUT_ENABLED", getBoolEnv("PAYMENT_STUB_ENABLED", getBoolEnv("PAYMENT_STUB_PUBLIC_MOCK_ENABLED", false))),
 	}
+}
+
+func normalizeBaseURL(rawURL string) string {
+	rawURL = strings.TrimRight(strings.TrimSpace(rawURL), "/")
+	if isPlaceholderURL(rawURL) {
+		return ""
+	}
+	return rawURL
+}
+
+func isPlaceholderURL(rawURL string) bool {
+	if rawURL == "" {
+		return false
+	}
+	parsed, err := url.Parse(rawURL)
+	if err != nil {
+		return false
+	}
+	host := strings.ToLower(parsed.Hostname())
+	return host == "example.com" || strings.HasSuffix(host, ".example.com")
 }
 
 func loadDotEnv(path string) error {
