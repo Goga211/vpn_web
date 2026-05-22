@@ -3,6 +3,7 @@ package checkout
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 )
 
@@ -36,12 +37,14 @@ func TestStorePersistsCheckouts(t *testing.T) {
 		t.Fatalf("reloaded checkout = %+v", got)
 	}
 
-	stat, err := os.Stat(filepath.Join(dir, "checkouts.json"))
-	if err != nil {
-		t.Fatalf("stat checkouts file: %v", err)
-	}
-	if gotMode := stat.Mode().Perm(); gotMode != 0o600 {
-		t.Fatalf("checkouts file mode = %o, want 600", gotMode)
+	if runtime.GOOS != "windows" {
+		stat, err := os.Stat(filepath.Join(dir, "checkouts.json"))
+		if err != nil {
+			t.Fatalf("stat checkouts file: %v", err)
+		}
+		if gotMode := stat.Mode().Perm(); gotMode != 0o600 {
+			t.Fatalf("checkouts file mode = %o, want 600", gotMode)
+		}
 	}
 }
 
