@@ -527,28 +527,44 @@ strong {
   justify-content: space-between;
   overflow: hidden;
   padding: 24px;
+  isolation: isolate;
+}
+
+.service-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--service-bg, transparent);
+  opacity: 0.96;
+  transition: opacity 0.22s ease;
+}
+
+.service-card:hover::before {
+  opacity: 1;
 }
 
 .service-card-top {
+  position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  color: var(--muted);
+  width: fit-content;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  padding: 7px 10px;
+  color: var(--service-accent, var(--muted));
   font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
-}
-
-.service-card-top span:last-child {
-  color: color-mix(in srgb, var(--muted) 52%, transparent);
-  font-size: 22px;
-  line-height: 1;
+  backdrop-filter: blur(12px);
 }
 
 .service-content {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   margin-top: auto;
 }
 
@@ -562,17 +578,139 @@ strong {
   max-width: 520px;
 }
 
-.service-icon {
-  border-radius: 18px;
-  box-shadow: 0 14px 28px rgba(23, 38, 27, 0.12);
+.service-art {
+  position: absolute;
+  z-index: 1;
+  top: 24px;
+  right: 24px;
+  width: clamp(140px, 16vw, 210px);
+  height: clamp(116px, 14vw, 170px);
+  color: var(--service-accent, var(--accent));
+  opacity: 0.78;
   transition:
-    box-shadow 0.22s ease,
+    opacity 0.22s ease,
     transform 0.22s ease;
 }
 
-.service-card:hover .service-icon {
-  box-shadow: 0 18px 36px rgba(23, 38, 27, 0.16);
-  transform: translateY(-2px) scale(1.03);
+.service-card:hover .service-art {
+  opacity: 0.92;
+  transform: translateY(-4px) scale(1.04);
+}
+
+.service-art span {
+  position: absolute;
+  display: grid;
+  min-width: 54px;
+  height: 54px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--service-accent) 18%, transparent);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  color: color-mix(in srgb, var(--service-accent) 70%, var(--text));
+  font-size: 18px;
+  font-weight: 920;
+  box-shadow: 0 18px 38px color-mix(in srgb, var(--service-accent) 8%, transparent);
+  backdrop-filter: blur(12px);
+}
+
+.service-art-media span:nth-child(1) {
+  top: 10px;
+  right: 24px;
+}
+
+.service-art-media .media-play {
+  width: 168px;
+  height: 116px;
+  min-width: 168px;
+  border: 10px solid color-mix(in srgb, #f1a8b0 78%, transparent);
+  border-radius: 34px;
+  background: transparent;
+  box-shadow: none;
+  transform: rotate(-1deg);
+}
+
+.service-art-media .media-play::before {
+  content: "";
+  width: 0;
+  height: 0;
+  margin-left: 10px;
+  border-top: 24px solid transparent;
+  border-bottom: 24px solid transparent;
+  border-left: 39px solid color-mix(in srgb, #f1a8b0 78%, transparent);
+}
+
+.service-art-work .work-edit {
+  position: absolute;
+  top: 0;
+  right: 18px;
+  width: 154px;
+  height: 154px;
+  color: color-mix(in srgb, #22c55e 74%, transparent);
+  opacity: 0.82;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 11;
+}
+
+.service-art-icon {
+  position: absolute;
+  right: 22px;
+  top: 18px;
+  width: 112px;
+  height: 112px;
+  stroke-width: 1.35;
+  opacity: 0.28;
+}
+
+.service-art-social .service-art-icon {
+  right: 26px;
+  top: 8px;
+  width: 150px;
+  height: 150px;
+  color: color-mix(in srgb, var(--surface-strong) 34%, transparent);
+  opacity: 1;
+  stroke-width: 1.6;
+}
+
+.service-art-travel .service-art-icon {
+  right: 24px;
+  top: 8px;
+  width: 154px;
+  height: 154px;
+  color: color-mix(in srgb, var(--teal) 34%, transparent);
+  opacity: 1;
+  stroke-width: 1.6;
+  transform: rotate(-10deg);
+}
+
+.service-card.tone-1 {
+  --service-accent: var(--rose);
+  --service-bg:
+    linear-gradient(135deg, color-mix(in srgb, var(--rose) 10%, transparent), transparent 54%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 96%, transparent), var(--surface));
+}
+
+.service-card.tone-2 {
+  --service-accent: var(--surface-strong);
+  --service-bg:
+    linear-gradient(135deg, color-mix(in srgb, var(--surface-strong) 9%, transparent), transparent 56%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 96%, transparent), var(--surface));
+}
+
+.service-card.tone-3 {
+  --service-accent: var(--accent);
+  --service-bg:
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 11%, transparent), transparent 55%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 96%, transparent), var(--surface));
+}
+
+.service-card.tone-4 {
+  --service-accent: var(--teal);
+  --service-bg:
+    linear-gradient(135deg, color-mix(in srgb, var(--teal) 11%, transparent), transparent 55%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 96%, transparent), var(--surface));
 }
 
 .checkout-section {
@@ -930,8 +1068,13 @@ strong {
   box-shadow: none;
 }
 
-:root[data-theme="dark"] .service-icon {
-  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.26);
+:root[data-theme="dark"] .service-art {
+  opacity: 0.68;
+}
+
+:root[data-theme="dark"] .service-art span {
+  background: color-mix(in srgb, var(--surface) 76%, transparent);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.18);
 }
 
 .process-section {
@@ -1084,8 +1227,10 @@ strong {
     var(--surface);
   padding: 18px;
   text-align: left;
+  outline: none;
   box-shadow: 0 1px 0 rgba(23, 38, 27, 0.04);
   transition:
+    background 0.22s ease,
     border-color 0.22s ease,
     box-shadow 0.22s ease,
     transform 0.22s ease;
@@ -1098,10 +1243,22 @@ strong {
 }
 
 .plan-card.is-selected {
-  border-color: color-mix(in srgb, var(--accent) 54%, var(--line));
+  border-color: color-mix(in srgb, var(--accent) 44%, var(--line));
+  background:
+    linear-gradient(150deg, color-mix(in srgb, var(--accent) 9%, var(--surface)) 0%, color-mix(in srgb, var(--surface) 94%, transparent) 52%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface) 98%, transparent), color-mix(in srgb, var(--accent-soft) 72%, var(--surface))),
+    var(--surface);
   box-shadow:
-    0 22px 54px color-mix(in srgb, var(--accent) 12%, transparent),
-    0 0 0 5px var(--accent-soft);
+    0 24px 62px color-mix(in srgb, var(--accent) 14%, transparent),
+    0 0 0 4px color-mix(in srgb, var(--accent-soft) 72%, transparent);
+  transform: translateY(-2px);
+}
+
+.plan-card:focus-visible {
+  border-color: color-mix(in srgb, var(--accent) 58%, var(--line));
+  box-shadow:
+    0 18px 42px color-mix(in srgb, var(--accent) 12%, transparent),
+    0 0 0 4px var(--accent-soft);
 }
 
 .plan-badge {
@@ -1161,6 +1318,14 @@ strong {
   border-radius: 999px;
   background: var(--accent-soft);
   color: var(--accent-strong);
+}
+
+.plan-card.is-selected .plan-check {
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
+  color: #ffffff;
+  box-shadow:
+    0 12px 24px color-mix(in srgb, var(--accent) 22%, transparent),
+    0 0 0 5px color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .plan-price {

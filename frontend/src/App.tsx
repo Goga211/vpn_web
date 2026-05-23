@@ -7,14 +7,12 @@ import {
   ChevronDown,
   CircleDollarSign,
   Copy,
-  Globe2,
   Headphones,
   Laptop,
   Mail,
+  MessageCircle,
   Moon,
-  PlugZap,
-  Router,
-  Smartphone,
+  Plane,
   Sparkles,
   Sun,
   X,
@@ -32,7 +30,7 @@ type AccessDialog =
 
 const defaultConfig: SiteConfig = {
   brandName: 'FlowPass',
-  supportTelegramUrl: 'https://t.me/your_support',
+  supportTelegramUrl: 'https://t.me/bezgraniz_vpn_bot',
   supportEmail: 'support@example.com',
   paymentProvider: 'online',
   checkoutEnabled: true,
@@ -142,30 +140,32 @@ const features: Array<{
   },
 ]
 
-const services: Array<{ label: string; title: string; text: string; icon: LucideIcon }> = [
+type ServiceArt = 'media' | 'social' | 'work' | 'travel'
+
+const services: Array<{ label: string; title: string; text: string; art: ServiceArt }> = [
   {
     label: 'Медиа',
     title: 'Видео и стриминг',
     text: 'Стабильный доступ к видео, трансляциям и обучающим платформам.',
-    icon: Globe2,
+    art: 'media',
   },
   {
     label: 'Общение',
     title: 'Соцсети и мессенджеры',
     text: 'Привычные сервисы на телефоне и десктопе без лишних действий.',
-    icon: Smartphone,
+    art: 'social',
   },
   {
     label: 'Работа',
     title: 'Рабочие инструменты',
     text: 'Почта, AI-сервисы, облака, таск-трекеры и ежедневные рабочие кабинеты.',
-    icon: PlugZap,
+    art: 'work',
   },
   {
-    label: 'Поездки',
-    title: 'Поездки',
+    label: 'Путешествия',
+    title: 'Путешествия',
     text: 'В дороге проще сохранить привычные сайты, подписки и личные кабинеты.',
-    icon: Router,
+    art: 'travel',
   },
 ]
 
@@ -539,28 +539,28 @@ function Hero({ brandName }: { brandName: string }) {
 function ProcessSection() {
   const steps = [
     {
-      number: '01',
+      number: '1',
       title: 'Выбираешь тариф',
       text: 'Сначала клиент выбирает срок подписки, цену, объем данных и количество устройств.',
       icon: CircleDollarSign,
       tone: 'text-[var(--accent-strong)] bg-[var(--accent-soft)]',
     },
     {
-      number: '02',
+      number: '2',
       title: 'Оставляешь контакт',
       text: 'Достаточно Telegram или email. По нему можно найти оформление и восстановить доступ.',
       icon: Mail,
       tone: 'text-[var(--teal)] bg-[var(--teal-soft)]',
     },
     {
-      number: '03',
+      number: '3',
       title: 'Оплата подтверждается',
       text: 'После подтверждения сайт фиксирует заказ и запускает активацию профиля.',
       icon: BadgeCheck,
       tone: 'text-[var(--amber)] bg-[var(--amber-soft)]',
     },
     {
-      number: '04',
+      number: '4',
       title: 'Ссылка появляется на сайте',
       text: 'Личная страница подписки открывается в браузере сразу после готовности доступа.',
       icon: Copy,
@@ -674,6 +674,43 @@ function FeatureSection() {
   )
 }
 
+function ServiceArtwork({ type }: { type: ServiceArt }) {
+  if (type === 'media') {
+    return (
+      <div className="service-art service-art-media" aria-hidden="true">
+        <span className="media-play" />
+      </div>
+    )
+  }
+
+  if (type === 'work') {
+    return (
+      <div className="service-art service-art-work" aria-hidden="true">
+        <svg className="work-edit" viewBox="0 0 180 180" focusable="false">
+          <path d="M46 32H98" />
+          <path d="M132 90v44c0 14-10 24-24 24H46c-14 0-24-10-24-24V56c0-14 10-24 24-24" />
+          <path d="M74 122 128 68c10-10 27-3 27 11 0 4-2 8-5 11l-54 54-28 8 6-30Z" />
+          <path d="M120 76 142 98" />
+        </svg>
+      </div>
+    )
+  }
+
+  if (type === 'social') {
+    return (
+      <div className="service-art service-art-social" aria-hidden="true">
+        <MessageCircle className="service-art-icon" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="service-art service-art-travel" aria-hidden="true">
+      <Plane className="service-art-icon" />
+    </div>
+  )
+}
+
 function ServicesSection() {
   return (
     <section id="services" className="services-section border-b border-[var(--line)] py-16 sm:py-20">
@@ -681,31 +718,20 @@ function ServicesSection() {
         <SectionHeader
           eyebrow="Сценарии"
           title="Для привычных задач без лишней настройки"
-          text="Сервис закрывает ежедневные сценарии: рабочие кабинеты, общение, видео и поездки."
+          text="Сервис закрывает ежедневные сценарии: рабочие кабинеты, общение, видео и путешествия."
         />
         <div className="service-grid">
           {services.map((service, index) => (
             <article
-              className="service-card group transition"
+              className={clsx('service-card group transition', `tone-${index + 1}`)}
               key={service.title}
               data-reveal
               data-reveal-delay={index}
             >
               <div className="service-card-top">
                 <span>{service.label}</span>
-                <span>0{index + 1}</span>
               </div>
-              <div
-                className={clsx(
-                  'service-icon grid size-14 place-items-center text-white',
-                  index === 0 && 'bg-[var(--rose)]',
-                  index === 1 && 'bg-[var(--surface-strong)] text-[var(--page-bg)]',
-                  index === 2 && 'bg-[var(--accent)]',
-                  index === 3 && 'bg-[var(--teal)]',
-                )}
-              >
-                <service.icon aria-hidden="true" className="size-6" />
-              </div>
+              <ServiceArtwork type={service.art} />
               <div className="service-content">
                 <h3 className="mt-2 text-xl font-black">{service.title}</h3>
                 <p className="mt-3 max-w-xl font-medium leading-7 text-[var(--muted)]">
@@ -873,9 +899,9 @@ function CheckoutSection({
           </div>
           <div className="checkout-mini-metrics" data-reveal data-reveal-delay="1">
             {[
-              ['01', 'тариф выбран'],
-              ['02', 'контакт указан'],
-              ['03', 'ссылка готова'],
+              ['1', 'тариф выбран'],
+              ['2', 'контакт указан'],
+              ['3', 'ссылка готова'],
             ].map(([number, label]) => (
               <div className="checkout-mini-metric" key={number}>
                 <span>{number}</span>

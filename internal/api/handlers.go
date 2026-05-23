@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"log/slog"
@@ -128,7 +129,10 @@ func (s *Server) handleCheckout(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result, err := s.checkout.Start(r.Context(), checkout.CreateInput{
+	provisionCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
+
+	result, err := s.checkout.Start(provisionCtx, checkout.CreateInput{
 		PlanID:   req.PlanID,
 		Contact:  firstNonEmpty(req.Telegram, req.Email, req.Contact),
 		Email:    req.Email,

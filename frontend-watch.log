@@ -1,0 +1,287 @@
+
+> frontend@0.0.0 build:watch
+> vite build --watch
+
+[36mvite v8.0.14 [32mbuilding client environment for production...[36m[39m
+[36m
+watching for file changes...[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-B0kBHH6W.css   55.61 kB │ gzip: 10.37 kB
+../web/assets/index-CENyACJe.js   238.65 kB │ gzip: 73.57 kB
+
+[36mbuilt in 279ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-B0kBHH6W.css   55.61 kB │ gzip: 10.37 kB
+../web/assets/index-Bap0QBoI.js   237.61 kB │ gzip: 73.14 kB
+
+[36mbuilt in 197ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-B0kBHH6W.css   55.61 kB │ gzip: 10.37 kB
+../web/assets/index-CEO1KeWJ.js   237.58 kB │ gzip: 73.14 kB
+
+[36mbuilt in 171ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-B0kBHH6W.css   55.61 kB │ gzip: 10.37 kB
+../web/assets/index-DXayiLv2.js   238.83 kB │ gzip: 73.56 kB
+
+[36mbuilt in 213ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-DY80G75V.css   58.31 kB │ gzip: 10.80 kB
+../web/assets/index-Dgm2Z8mF.js   238.83 kB │ gzip: 73.56 kB
+
+[36mbuilt in 142ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.49 kB
+../web/assets/index-D_8nF2yN.css   58.59 kB │ gzip: 10.82 kB
+../web/assets/index-BzSN1X2Q.js   238.83 kB │ gzip: 73.56 kB
+
+[36mbuilt in 126ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-D_8nF2yN.css   58.59 kB │ gzip: 10.82 kB
+../web/assets/index-BPdnFfjK.js   238.84 kB │ gzip: 73.56 kB
+
+[36mbuilt in 138ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-D_8nF2yN.css   58.59 kB │ gzip: 10.82 kB
+../web/assets/index-BPdnFfjK.js   238.84 kB │ gzip: 73.56 kB
+
+[36mbuilt in 184ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-D_8nF2yN.css   58.59 kB │ gzip: 10.82 kB
+../web/assets/index-8eZEok0j.js   238.87 kB │ gzip: 73.57 kB
+
+[36mbuilt in 151ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.49 kB
+../web/assets/index-DXnW3OuN.css   58.78 kB │ gzip: 10.90 kB
+../web/assets/index-BArJztSU.js   238.87 kB │ gzip: 73.57 kB
+
+[36mbuilt in 147ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-DXnW3OuN.css   58.78 kB │ gzip: 10.90 kB
+../web/assets/index-y9DKKD3N.js   238.85 kB │ gzip: 73.57 kB
+
+[36mbuilt in 193ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-Bw8mTkp7.css   59.08 kB │ gzip: 10.92 kB
+../web/assets/index-CPnZEof0.js   238.85 kB │ gzip: 73.57 kB
+
+[36mbuilt in 154ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-Bw8mTkp7.css   59.08 kB │ gzip: 10.92 kB
+../web/assets/index-C8sZc4JM.js   238.93 kB │ gzip: 73.59 kB
+
+[36mbuilt in 244ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-BF7LKCyJ.css   59.66 kB │ gzip: 11.06 kB
+../web/assets/index-DpyCq9as.js   238.93 kB │ gzip: 73.59 kB
+
+[36mbuilt in 151ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-CNyRFXsy.css   59.60 kB │ gzip: 11.16 kB
+../web/assets/index-pBjYDDkF.js   238.93 kB │ gzip: 73.59 kB
+
+[36mbuilt in 145ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-BF7LKCyJ.css   59.66 kB │ gzip: 11.06 kB
+../web/assets/index-DpyCq9as.js   238.93 kB │ gzip: 73.59 kB
+
+[36mbuilt in 137ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-D3TAWRUN.css   59.43 kB │ gzip: 11.05 kB
+../web/assets/index-Cmb8n4WE.js   238.93 kB │ gzip: 73.59 kB
+
+[36mbuilt in 226ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-D3TAWRUN.css   59.43 kB │ gzip: 11.05 kB
+../web/assets/index-ClY0yfke.js   239.08 kB │ gzip: 73.67 kB
+
+[36mbuilt in 173ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-zv3__NXt.css   59.19 kB │ gzip: 11.02 kB
+../web/assets/index-B-_cmpW7.js   239.08 kB │ gzip: 73.67 kB
+
+[36mbuilt in 182ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-zv3__NXt.css   59.19 kB │ gzip: 11.02 kB
+../web/assets/index-DQ95Retl.js   238.78 kB │ gzip: 73.56 kB
+
+[36mbuilt in 133ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-DK7hk-Rm.css   58.34 kB │ gzip: 10.85 kB
+../web/assets/index-CdoL8Iz3.js   238.78 kB │ gzip: 73.56 kB
+
+[36mbuilt in 148ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-DK7hk-Rm.css   58.34 kB │ gzip: 10.85 kB
+../web/assets/index-DIZffMX9.js   238.61 kB │ gzip: 73.52 kB
+
+[36mbuilt in 161ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-BhyFpQ99.css   59.04 kB │ gzip: 10.95 kB
+../web/assets/index-5nhjm2N0.js   238.61 kB │ gzip: 73.52 kB
+
+[36mbuilt in 164ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-BhyFpQ99.css   59.04 kB │ gzip: 10.95 kB
+../web/assets/index-CvAN8Min.js   238.61 kB │ gzip: 73.53 kB
+
+[36mbuilt in 171ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-DaW_i1i9.css   58.53 kB │ gzip: 10.86 kB
+../web/assets/index-5mzJDn2F.js   238.61 kB │ gzip: 73.53 kB
+
+[36mbuilt in 150ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-C7pOgb_U.css   58.41 kB │ gzip: 10.83 kB
+../web/assets/index-BJ1aAopT.js   238.61 kB │ gzip: 73.53 kB
+
+[36mbuilt in 153ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-C7pOgb_U.css   58.41 kB │ gzip: 10.83 kB
+../web/assets/index-gwlDa5hN.js   238.61 kB │ gzip: 73.52 kB
+
+[36mbuilt in 181ms.[39m
+[36m
+build started...[39m
+[2Ktransforming...✓ 1740 modules transformed.
+rendering chunks...
+computing gzip size...
+../web/index.html                   0.77 kB │ gzip:  0.48 kB
+../web/assets/index-WeaUenKW.css   58.60 kB │ gzip: 10.90 kB
+../web/assets/index-BwGeeNZU.js   238.61 kB │ gzip: 73.52 kB
+
+[36mbuilt in 143ms.[39m
