@@ -31,8 +31,8 @@ type AccessDialog =
   | { type: 'failure'; checkout?: Checkout; message: string }
 
 const defaultConfig: SiteConfig = {
-  brandName: 'NorthVPN',
-  supportTelegramUrl: 'https://t.me/your_vpn_support',
+  brandName: 'FlowPass',
+  supportTelegramUrl: 'https://t.me/your_support',
   supportEmail: 'support@example.com',
   paymentProvider: 'online',
   checkoutEnabled: true,
@@ -50,7 +50,7 @@ const fallbackPlans: Plan[] = [
     priceRub: 0,
     trafficLimitGb: 100,
     devices: 2,
-    highlight: 'Для проверки скорости',
+    highlight: 'Для знакомства с сервисом',
     provisionDuration: '72h0m0s',
   },
   {
@@ -118,25 +118,25 @@ const features: Array<{
 }> = [
   {
     title: 'Моментальная выдача',
-    text: 'После подтверждения оплаты личная ссылка подписки появляется прямо на сайте.',
+    text: 'После подтверждения оплаты личная страница подписки появляется прямо на сайте.',
     icon: Zap,
     tone: 'text-[var(--accent-strong)] bg-[var(--accent-soft)]',
   },
   {
     title: 'Лимиты без сюрпризов',
-    text: 'Срок, трафик и количество устройств берутся из выбранного тарифа автоматически.',
+    text: 'Срок, объем данных и количество устройств берутся из выбранного тарифа автоматически.',
     icon: BadgeCheck,
     tone: 'text-[var(--teal)] bg-[var(--teal-soft)]',
   },
   {
     title: 'Устройства рядом',
-    text: 'Телефон, ноутбук, планшет, ТВ-приставка или роутер работают от одной подписки.',
+    text: 'Телефон, ноутбук, планшет, ТВ-приставка или роутер подключаются к одной подписке.',
     icon: Laptop,
     tone: 'text-[var(--amber)] bg-[var(--amber-soft)]',
   },
   {
     title: 'Поддержка в Telegram',
-    text: 'Если выдача не прошла, поддержка быстро найдет оформление и доведет подключение.',
+    text: 'Если активация не прошла, поддержка быстро найдет оформление и доведет подключение.',
     icon: Headphones,
     tone: 'text-[var(--rose)] bg-[var(--rose-soft)]',
   },
@@ -144,27 +144,27 @@ const features: Array<{
 
 const services: Array<{ label: string; title: string; text: string; icon: LucideIcon }> = [
   {
-    label: 'Media',
+    label: 'Медиа',
     title: 'Видео и стриминг',
-    text: 'Стабильный маршрут для видео, трансляций и обучающих платформ.',
+    text: 'Стабильный доступ к видео, трансляциям и обучающим платформам.',
     icon: Globe2,
   },
   {
-    label: 'Social',
+    label: 'Общение',
     title: 'Соцсети и мессенджеры',
-    text: 'Привычный доступ на телефоне и десктопе без ручной настройки под каждый сервис.',
+    text: 'Привычные сервисы на телефоне и десктопе без лишних действий.',
     icon: Smartphone,
   },
   {
-    label: 'Work',
+    label: 'Работа',
     title: 'Рабочие инструменты',
     text: 'Почта, AI-сервисы, облака, таск-трекеры и ежедневные рабочие кабинеты.',
     icon: PlugZap,
   },
   {
-    label: 'Travel',
+    label: 'Поездки',
     title: 'Поездки',
-    text: 'За рубежом проще сохранить привычные сайты, подписки и личные кабинеты.',
+    text: 'В дороге проще сохранить привычные сайты, подписки и личные кабинеты.',
     icon: Router,
   },
 ]
@@ -178,7 +178,7 @@ const faqs = [
   {
     question: 'Что делать со ссылкой?',
     answer:
-      'Открой ее на нужном устройстве и импортируй подписку в совместимое VPN-приложение.',
+      'Открой ее на нужном устройстве и следуй инструкции внутри личного кабинета.',
   },
   {
     question: 'Что если автоматическая выдача недоступна?',
@@ -215,7 +215,7 @@ function App() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
-    window.localStorage.setItem('vpn-theme', theme)
+    window.localStorage.setItem('site-theme', theme)
   }, [theme])
 
   useEffect(() => {
@@ -231,7 +231,7 @@ function App() {
 
       if (configResult.status === 'fulfilled') {
         setConfig({ ...defaultConfig, ...configResult.value })
-        document.title = `${configResult.value.brandName || defaultConfig.brandName} — стабильный VPN`
+        document.title = `${configResult.value.brandName || defaultConfig.brandName} — цифровая подписка`
       }
 
       const loadedPlans =
@@ -279,7 +279,7 @@ function App() {
     setSubmitting(true)
     setFormStatus({
       kind: 'idle',
-      message: 'Проверяем оплату и активируем подписку...',
+      message: 'Проверяем оплату и активируем доступ...',
     })
 
     try {
@@ -292,7 +292,7 @@ function App() {
       })
       setFormStatus({
         kind: 'success',
-        message: 'Готово: доступ активирован, ссылка подписки получена.',
+        message: 'Готово: доступ активирован, ссылка получена.',
       })
       setDialog({ type: 'success', checkout: result.checkout, payment: result.payment })
       setTelegram('')
@@ -389,7 +389,7 @@ function SiteHeader({
       >
         <a href="#top" className="flex min-w-0 items-center gap-3 no-underline">
           <img
-            className="size-10 shrink-0 rounded-lg shadow-[var(--shadow)]"
+            className="size-10 shrink-0 rounded-lg"
             src={logoSrc}
             width="40"
             height="40"
@@ -439,55 +439,96 @@ function Hero({ brandName }: { brandName: string }) {
   return (
     <section
       id="top"
-      className="relative isolate min-h-[calc(100svh-72px)] overflow-hidden border-b border-[var(--line)]"
+      className="relative isolate min-h-[calc(100svh-72px)] overflow-hidden border-b border-[var(--line)] bg-[var(--page-bg)]"
     >
       <div className="hero-scene" aria-hidden="true" />
 
-      <div className="relative z-10 mx-auto flex min-h-[calc(100svh-72px)] w-[min(1180px,calc(100vw-32px))] flex-col justify-center py-10 sm:py-14 lg:py-16">
+      <div className="relative z-10 mx-auto grid min-h-[calc(100svh-72px)] w-[min(1180px,calc(100vw-32px))] items-center gap-8 py-10 sm:py-14 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.72fr)] lg:py-16">
         <div className="max-w-4xl">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[var(--surface)] px-3 py-2 text-sm font-extrabold text-[var(--muted)] shadow-[var(--shadow)]">
+          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[color-mix(in_srgb,var(--surface)_86%,transparent)] px-3 py-2 text-sm font-bold text-[var(--muted)] shadow-[0_10px_24px_rgba(23,38,27,0.05)] backdrop-blur-xl">
             <Sparkles aria-hidden="true" className="size-4 text-[var(--accent-strong)]" />
             {brandName}
           </div>
-          <h1 className="max-w-4xl text-4xl font-black leading-[1.02] text-[var(--text)] sm:text-6xl lg:text-7xl">
-            VPN-подписка с мгновенной выдачей
+          <h1 className="max-w-4xl text-4xl font-extrabold leading-[1.04] text-[var(--text)] sm:text-6xl lg:text-7xl">
+            Цифровая подписка с быстрой активацией
           </h1>
           <p className="mt-6 max-w-2xl text-lg font-medium leading-8 text-[var(--muted)] sm:text-xl">
-            Выбери тариф, оплати доступ и сразу получи личную страницу подписки
+            Выбери тариф, оплати онлайн и получи личную страницу с настройками
             для телефона, ноутбука, планшета или роутера.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a
-              className="primary-action inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 text-sm font-black text-white no-underline transition hover:bg-[var(--accent-strong)]"
+              className="primary-action inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 text-sm font-extrabold text-white no-underline shadow-[0_14px_28px_rgba(63,166,106,0.18)] transition hover:bg-[var(--accent-strong)]"
               href="#checkout"
             >
-              Оформить доступ
+              <span>Оформить доступ</span>
               <ArrowRight aria-hidden="true" className="size-4" />
             </a>
             <a
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[var(--line)] bg-[var(--surface)] px-5 text-sm font-black no-underline transition hover:border-[var(--line-strong)] hover:bg-[var(--surface-muted)]"
+              className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-[var(--line)] bg-[color-mix(in_srgb,var(--surface)_92%,transparent)] px-5 text-sm font-extrabold no-underline transition hover:border-[var(--line-strong)] hover:bg-[var(--surface)]"
               href="#pricing"
             >
               Посмотреть тарифы
               <CircleDollarSign aria-hidden="true" className="size-4" />
             </a>
           </div>
+
+          <div className="mt-12 grid gap-3 sm:grid-cols-3 lg:max-w-3xl">
+            {[
+              ['1 клик', 'оформление на сайте'],
+              ['сразу', 'личная ссылка'],
+              ['до 10', 'устройств на тарифе'],
+            ].map(([value, label]) => (
+              <div
+                className="rounded-lg border border-[var(--line)] bg-[color-mix(in_srgb,var(--surface)_86%,transparent)] p-4 shadow-[0_10px_28px_rgba(23,38,27,0.04)] backdrop-blur-xl"
+                key={value}
+              >
+                <div className="text-xl font-extrabold">{value}</div>
+                <div className="mt-1 text-sm font-semibold text-[var(--muted)]">{label}</div>
+              </div>
+            ))}
+          </div>
         </div>
 
-        <div className="mt-12 grid gap-3 sm:grid-cols-3 lg:max-w-3xl">
-          {[
-            ['1 клик', 'оформление на сайте'],
-            ['сразу', 'ссылка на подписку'],
-            ['до 10', 'устройств на тарифе'],
-          ].map(([value, label]) => (
-            <div
-              className="rounded-lg border border-[var(--line)] bg-[color-mix(in_srgb,var(--surface)_86%,transparent)] p-4 backdrop-blur-xl"
-              key={value}
-            >
-              <div className="text-xl font-black">{value}</div>
-              <div className="mt-1 text-sm font-semibold text-[var(--muted)]">{label}</div>
+        <div className="hero-panel relative hidden lg:block" aria-hidden="true">
+          <div className="rounded-lg border border-[var(--line)] bg-[color-mix(in_srgb,var(--surface)_92%,transparent)] p-5 shadow-[var(--shadow)] backdrop-blur-xl">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <div className="text-sm font-extrabold text-[var(--muted)]">Личный кабинет</div>
+                <div className="mt-2 text-3xl font-extrabold">Подписка активна</div>
+              </div>
+              <span className="grid size-12 place-items-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent-strong)]">
+                <Check aria-hidden="true" className="size-6" />
+              </span>
             </div>
-          ))}
+            <div className="mt-5 rounded-lg bg-[var(--surface-muted)] p-4">
+              <div className="flex items-center justify-between text-sm font-extrabold">
+                <span>Период</span>
+                <span>90 дней</span>
+              </div>
+              <div className="mt-4 h-2 rounded-full bg-[color-mix(in_srgb,var(--accent)_16%,var(--surface))]">
+                <div className="h-full w-2/3 rounded-full bg-[var(--accent)]" />
+              </div>
+            </div>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {[
+                ['5', 'устройств'],
+                ['24/7', 'поддержка'],
+              ].map(([value, label]) => (
+                <div className="rounded-lg bg-[var(--surface-muted)] p-4" key={label}>
+                  <div className="text-2xl font-extrabold">{value}</div>
+                  <div className="mt-1 text-xs font-bold text-[var(--muted)]">{label}</div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 flex items-center justify-between rounded-lg border border-[var(--line)] bg-[var(--surface)] p-4">
+              <div>
+                <div className="text-sm font-extrabold">Ссылка готова</div>
+                <div className="mt-1 text-xs font-bold text-[var(--muted)]">Можно открыть на любом устройстве</div>
+              </div>
+              <ArrowRight aria-hidden="true" className="size-5 text-[var(--accent-strong)]" />
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -499,7 +540,7 @@ function ProcessSection() {
     {
       number: '01',
       title: 'Выбираешь тариф',
-      text: 'Сначала клиент выбирает срок подписки, цену, лимит трафика и количество устройств.',
+      text: 'Сначала клиент выбирает срок подписки, цену, объем данных и количество устройств.',
       icon: CircleDollarSign,
       tone: 'text-[var(--accent-strong)] bg-[var(--accent-soft)]',
     },
@@ -513,7 +554,7 @@ function ProcessSection() {
     {
       number: '03',
       title: 'Оплата подтверждается',
-      text: 'После подтверждения сайт фиксирует заказ и запускает выдачу VPN-профиля.',
+      text: 'После подтверждения сайт фиксирует заказ и запускает активацию профиля.',
       icon: BadgeCheck,
       tone: 'text-[var(--amber)] bg-[var(--amber-soft)]',
     },
@@ -539,7 +580,7 @@ function ProcessSection() {
             </h2>
             <p className="mt-5 max-w-2xl text-lg font-medium leading-8 text-[var(--muted)]">
               Клиент проходит понятный путь на сайте: выбирает тариф, оставляет контакт,
-              подтверждает оплату и получает страницу подписки прямо в браузере.
+              подтверждает оплату и получает личную страницу прямо в браузере.
             </p>
           </div>
 
@@ -567,7 +608,7 @@ function ProcessSection() {
             data-reveal
             data-reveal-delay="2"
           >
-            Выбрать тариф
+            <span>Выбрать тариф</span>
             <ArrowRight aria-hidden="true" className="size-4" />
           </a>
         </div>
@@ -608,7 +649,7 @@ function FeatureSection() {
         <SectionHeader
           eyebrow="Почему удобно"
           title="Покупка не уводит клиента в ручную обработку"
-          text="Сайт держит весь путь оформления в одном месте: выбор тарифа, контакты, выдача и ссылка подписки."
+          text="Сайт держит весь путь оформления в одном месте: выбор тарифа, контакты, активация и личная ссылка."
         />
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {features.map((feature, index) => (
@@ -696,7 +737,7 @@ function PricingSection({
           <SectionHeader
             eyebrow="Тарифы"
             title="Выбери срок подписки"
-            text="Старшие тарифы дешевле в пересчете на месяц. Трафик и устройства применяются автоматически."
+            text="Старшие тарифы дешевле в пересчете на месяц. Объем данных и устройства применяются автоматически."
             compact
           />
         </div>
@@ -730,9 +771,9 @@ function PriceCard({
   return (
     <button
       className={clsx(
-        'relative flex min-h-72 flex-col rounded-lg border bg-[var(--surface)] p-5 text-left transition hover:-translate-y-0.5 hover:shadow-[var(--shadow)]',
+        'relative flex min-h-56 flex-col rounded-lg border bg-[color-mix(in_srgb,var(--surface)_96%,transparent)] p-5 text-left shadow-[0_1px_0_rgba(23,38,27,0.03)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow)] sm:min-h-72',
         selected
-          ? 'border-[var(--accent)] ring-4 ring-[var(--accent-soft)]'
+          ? 'border-[color-mix(in_srgb,var(--accent)_54%,var(--line))] ring-4 ring-[var(--accent-soft)]'
           : 'border-[var(--line)]',
       )}
       type="button"
@@ -742,7 +783,7 @@ function PriceCard({
       data-reveal-delay={revealDelay}
     >
       {plan.popular ? (
-        <span className="absolute left-5 top-0 inline-flex -translate-y-1/2 items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--surface)] px-2.5 py-1 text-xs font-black text-[var(--accent-strong)] shadow-[0_12px_28px_rgba(16,17,20,0.12)]">
+        <span className="absolute left-5 top-0 inline-flex -translate-y-1/2 items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--surface)] px-2.5 py-1 text-xs font-extrabold text-[var(--accent-strong)] shadow-[0_10px_22px_rgba(23,38,27,0.08)]">
           <Sparkles aria-hidden="true" className="size-3.5" />
           Популярный
         </span>
@@ -753,14 +794,14 @@ function PriceCard({
           <div className="mt-1 text-sm font-bold text-[var(--muted)]">{plan.period}</div>
         </div>
         {selected ? (
-          <span className="grid size-7 place-items-center rounded-full bg-[var(--accent)] text-white">
+          <span className="grid size-7 place-items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-strong)]">
             <Check aria-hidden="true" className="size-4" />
           </span>
         ) : null}
       </div>
       <div className="mt-6">
         <div className="flex items-baseline gap-2">
-          <span className="text-4xl font-black">{formatPrice(plan.priceRub)}</span>
+          <span className="text-3xl font-extrabold sm:text-4xl">{formatPrice(plan.priceRub)}</span>
         </div>
         {plan.oldPriceRub ? (
           <div className="mt-1 text-sm font-bold text-[var(--muted)]">
@@ -769,7 +810,7 @@ function PriceCard({
         ) : null}
       </div>
       <p className="mt-4 text-sm font-medium leading-6 text-[var(--muted)]">
-        {plan.highlight || 'Подписка VPN'}
+        {plan.highlight || 'Цифровая подписка'}
       </p>
       <div className="mt-auto flex flex-wrap gap-2 pt-6">
         <MetaPill>{trafficLabel(plan)}</MetaPill>
@@ -828,7 +869,7 @@ function CheckoutSection({
           />
           <div className="mt-8 grid gap-3">
             {[
-              ['01', 'Выбор тарифа', 'Клиент видит срок, трафик, устройства и итоговую цену.'],
+              ['01', 'Выбор тарифа', 'Клиент видит срок, объем данных, устройства и итоговую цену.'],
               ['02', 'Подтверждение оплаты', 'Бэк фиксирует оформление и запускает выдачу.'],
               ['03', 'Подписка готова', 'Ссылка отображается в браузере и доступна для копирования.'],
             ].map(([number, title, text], index) => (
@@ -853,7 +894,7 @@ function CheckoutSection({
         </div>
 
         <form
-          className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[var(--shadow)]"
+          className="rounded-lg border border-[var(--line)] bg-[color-mix(in_srgb,var(--surface)_96%,transparent)] p-5 shadow-[var(--shadow)]"
           onSubmit={onSubmit}
           data-reveal
           data-reveal-delay="2"
@@ -944,7 +985,7 @@ function CheckoutSection({
               type="submit"
               disabled={submitting}
             >
-              {submitting ? 'Оформляем доступ...' : 'Оплатить и получить ссылку'}
+              <span>{submitting ? 'Оформляем доступ...' : 'Оплатить и получить ссылку'}</span>
               <ArrowRight aria-hidden="true" className="size-4" />
             </button>
 
@@ -1040,10 +1081,11 @@ function useScrollReveal() {
 function useSectionFocus() {
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
+    const desktopViewport = window.matchMedia('(min-width: 900px) and (pointer: fine)')
     const sections = Array.from(document.querySelectorAll<HTMLElement>('main > section'))
     let animationFrame = 0
 
-    if (!sections.length || prefersReducedMotion.matches) return
+    if (!sections.length || prefersReducedMotion.matches || !desktopViewport.matches) return
 
     function setFocusedSection() {
       animationFrame = 0
@@ -1095,7 +1137,8 @@ function useSectionFocus() {
 function useMagneticScroll() {
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-    if (prefersReducedMotion.matches) return
+    const desktopViewport = window.matchMedia('(min-width: 900px) and (pointer: fine)')
+    if (prefersReducedMotion.matches || !desktopViewport.matches) return
 
     const scrollKeys = new Set(['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '])
     let animationFrame = 0
@@ -1112,22 +1155,25 @@ function useMagneticScroll() {
       isAnimating = false
     }
 
-    function getSections() {
-      return Array.from(document.querySelectorAll<HTMLElement>('main > section'))
+    function getScrollTargets() {
+      return Array.from(document.querySelectorAll<HTMLElement>('main > section, body > footer'))
     }
 
     function getHeaderHeight() {
       return document.querySelector('header')?.getBoundingClientRect().height || 72
     }
 
-    function getCurrentSectionIndex(sections: HTMLElement[]) {
+    function getCurrentTargetIndex(targets: HTMLElement[]) {
+      const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
+      if (window.scrollY >= maxScroll - 2) return targets.length - 1
+
       const headerHeight = getHeaderHeight()
       const visibleHeight = Math.max(1, window.innerHeight - headerHeight)
       const viewportCenter = window.scrollY + headerHeight + visibleHeight / 2
 
-      return sections.reduce(
-        (best, section, index) => {
-          const rect = section.getBoundingClientRect()
+      return targets.reduce(
+        (best, target, index) => {
+          const rect = target.getBoundingClientRect()
           const sectionCenter = window.scrollY + rect.top + rect.height / 2
           const distance = Math.abs(sectionCenter - viewportCenter)
           return distance < best.distance ? { index, distance } : best
@@ -1148,24 +1194,34 @@ function useMagneticScroll() {
     }
 
     function goToRelativeSection(direction: number) {
-      const sections = getSections()
-      if (!sections.length) return
+      const targets = getScrollTargets()
+      if (!targets.length) return
 
-      const currentIndex = getCurrentSectionIndex(sections)
-      goToSection(currentIndex + direction, sections)
+      const currentIndex = getCurrentTargetIndex(targets)
+      goToTarget(currentIndex + direction, targets)
     }
 
-    function goToSection(index: number, currentSections = getSections()) {
-      if (!currentSections.length) return
+    function goToTarget(index: number, currentTargets = getScrollTargets()) {
+      if (!currentTargets.length) return
 
-      const sectionIndex = clamp(index, 0, currentSections.length - 1)
-      const section = currentSections[sectionIndex]
+      const targetIndex = clamp(index, 0, currentTargets.length - 1)
+      const targetElement = currentTargets[targetIndex]
       const headerHeight = getHeaderHeight()
       const visibleHeight = Math.max(1, window.innerHeight - headerHeight)
-      const rect = section.getBoundingClientRect()
-      const sectionCenter = window.scrollY + rect.top + rect.height / 2
       const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
-      const target = clamp(sectionCenter - headerHeight - visibleHeight / 2, 0, maxScroll)
+      const rect = targetElement.getBoundingClientRect()
+      const sectionCenter = window.scrollY + rect.top + rect.height / 2
+      const centeredTarget = sectionCenter - headerHeight - visibleHeight / 2
+      let target =
+        targetIndex === 0
+          ? 0
+          : targetIndex === currentTargets.length - 1
+            ? maxScroll
+            : clamp(centeredTarget, 0, maxScroll)
+
+      if (targetIndex < currentTargets.length - 1 && target >= maxScroll - 2) {
+        target = Math.max(0, maxScroll - Math.min(visibleHeight * 0.62, 520))
+      }
 
       if (Math.abs(target - window.scrollY) < 4) return
       animateScrollTo(target)
@@ -1253,16 +1309,16 @@ function useMagneticScroll() {
       event.preventDefault()
       if (isAnimating) return
 
-      const sections = getSections()
-      if (!sections.length) return
+      const targets = getScrollTargets()
+      if (!targets.length) return
 
-      const currentIndex = getCurrentSectionIndex(sections)
+      const currentIndex = getCurrentTargetIndex(targets)
       if (event.key === 'Home') {
-        goToSection(0, sections)
+        goToTarget(0, targets)
         return
       }
       if (event.key === 'End') {
-        goToSection(sections.length - 1, sections)
+        goToTarget(targets.length - 1, targets)
         return
       }
 
@@ -1270,7 +1326,7 @@ function useMagneticScroll() {
         event.key === 'ArrowUp' || event.key === 'PageUp' || (event.key === ' ' && event.shiftKey)
           ? -1
           : 1
-      goToSection(currentIndex + direction, sections)
+      goToTarget(currentIndex + direction, targets)
     }
 
     window.addEventListener('wheel', onWheel, { passive: false })
@@ -1312,8 +1368,7 @@ function SiteFooter({
             <span className="font-black">{brandName}</span>
           </a>
           <p className="mt-3 text-sm font-medium leading-6 text-[var(--muted)]">
-            Стабильный VPN для работы, общения, поездок и ежедневного доступа к
-            нужным сервисам.
+            Стабильный доступ для работы, общения, поездок и ежедневных задач.
           </p>
         </div>
         <div className="flex flex-wrap gap-3 text-sm font-bold text-[var(--muted)]">
@@ -1417,10 +1472,12 @@ function PlanSelect({
     <div className="relative" data-plan-select ref={rootRef} onKeyDown={handleKeyDown}>
       <button
         className={clsx(
-          'flex min-h-16 w-full items-center justify-between gap-4 rounded-lg border bg-[var(--surface)] px-4 py-3 text-left transition',
-          'hover:border-[var(--line-strong)] hover:shadow-[0_16px_34px_rgba(16,17,20,0.1)]',
+          'flex min-h-16 w-full items-center justify-between gap-4 rounded-lg border bg-[color-mix(in_srgb,var(--surface)_96%,transparent)] px-4 py-3 text-left transition',
+          'hover:border-[var(--line-strong)] hover:shadow-[0_14px_28px_rgba(23,38,27,0.08)]',
           'focus:outline-none focus:ring-4 focus:ring-[var(--accent-soft)]',
-          open ? 'border-[var(--accent)] ring-4 ring-[var(--accent-soft)]' : 'border-[var(--line)]',
+          open
+            ? 'border-[color-mix(in_srgb,var(--accent)_54%,var(--line))] ring-4 ring-[var(--accent-soft)]'
+            : 'border-[var(--line)]',
         )}
         type="button"
         aria-haspopup="listbox"
@@ -1448,7 +1505,7 @@ function PlanSelect({
 
       {open ? (
         <div
-          className="absolute left-0 right-0 top-[calc(100%+8px)] z-40 overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--surface)] p-2 shadow-[0_24px_60px_rgba(16,17,20,0.18)]"
+          className="absolute left-0 right-0 top-[calc(100%+8px)] z-40 overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--surface)] p-2 shadow-[0_22px_54px_rgba(23,38,27,0.14)]"
           role="listbox"
         >
           <div className="grid max-h-80 gap-1 overflow-y-auto">
@@ -1459,7 +1516,7 @@ function PlanSelect({
                   className={clsx(
                     'flex w-full items-center justify-between gap-3 rounded-lg px-3 py-3 text-left transition',
                     selected
-                      ? 'bg-[var(--accent)] text-white'
+                      ? 'bg-[var(--accent-soft)] text-[var(--text)]'
                       : 'bg-transparent hover:bg-[var(--surface-muted)]',
                   )}
                   type="button"
@@ -1476,7 +1533,7 @@ function PlanSelect({
                           className={clsx(
                             'rounded-full px-2 py-0.5 text-[11px] font-black',
                             selected
-                              ? 'bg-white/18 text-white'
+                              ? 'bg-[var(--surface)] text-[var(--accent-strong)]'
                               : 'bg-[var(--accent-soft)] text-[var(--accent-strong)]',
                           )}
                         >
@@ -1485,10 +1542,7 @@ function PlanSelect({
                       ) : null}
                     </span>
                     <span
-                      className={clsx(
-                        'mt-1 block text-xs font-bold',
-                        selected ? 'text-white/78' : 'text-[var(--muted)]',
-                      )}
+                      className="mt-1 block text-xs font-bold text-[var(--muted)]"
                     >
                       {plan.period} · {trafficLabel(plan)} · {plan.devices} устр.
                     </span>
@@ -1496,7 +1550,7 @@ function PlanSelect({
                   <span className="flex shrink-0 items-center gap-3">
                     <span className="text-base font-black">{formatPrice(plan.priceRub)}</span>
                     {selected ? (
-                      <span className="grid size-7 place-items-center rounded-full bg-white text-[var(--accent)]">
+                      <span className="grid size-7 place-items-center rounded-full bg-[var(--surface)] text-[var(--accent-strong)]">
                         <Check aria-hidden="true" className="size-4" />
                       </span>
                     ) : null}
@@ -1599,7 +1653,7 @@ function AccessModal({
                 target="_blank"
                 rel="noreferrer"
               >
-                Открыть подписку
+                <span>Открыть подписку</span>
                 <ArrowRight aria-hidden="true" className="size-4" />
               </a>
               <button
@@ -1659,7 +1713,7 @@ function MetaPill({ children }: { children: React.ReactNode }) {
 }
 
 function getInitialTheme(): Theme {
-  const saved = window.localStorage.getItem('vpn-theme')
+  const saved = window.localStorage.getItem('site-theme')
   if (saved === 'light' || saved === 'dark') return saved
   return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
 }

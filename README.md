@@ -1,13 +1,13 @@
-# VPN Web
+# Access Web
 
-Production-oriented VPN storefront with a Go backend, static frontend, checkout flow, and automatic subscription provisioning through the Remnawave API.
+Production-oriented subscription storefront with a Go backend, static frontend, checkout flow, and automatic access provisioning through the Remnawave API.
 
 The site is designed as a public-facing landing page: users choose a plan, leave Telegram or email, complete checkout, and receive a subscription page link in the browser.
 
 ## Features
 
-- Responsive VPN landing page with pricing, FAQ, support links, and checkout form.
-- Static frontend served directly by the Go binary; no Node.js build step.
+- Responsive landing page with pricing, FAQ, support links, and checkout form.
+- React/Vite frontend built into `web/` and served directly by the Go binary.
 - Checkout endpoint with validation, rate limiting, and safe public responses.
 - Automatic Remnawave user creation via `/api/users`.
 - Subscription link fallback lookup via `/api/subscriptions/by-username/{username}`.
@@ -20,7 +20,8 @@ The site is designed as a public-facing landing page: users choose a plan, leave
 ```text
 .
 ├── main.go                    # app entrypoint, static files, HTTP server
-├── web/                       # static frontend
+├── frontend/                  # React/Vite source frontend
+├── web/                       # built static frontend embedded by Go
 ├── internal/api/              # HTTP API handlers and rate limiter
 ├── internal/checkout/         # plans, checkout storage, provisioning service
 ├── internal/config/           # env and .env configuration
@@ -37,6 +38,8 @@ The site is designed as a public-facing landing page: users choose a plan, leave
 
 ```bash
 cp .env.example .env
+npm --prefix frontend install
+npm --prefix frontend run build
 go run .
 ```
 
@@ -48,6 +51,32 @@ http://localhost:8080
 
 The app loads `.env` automatically. Environment variables already set in the shell, Docker, or systemd have priority over `.env`.
 
+## Frontend Development
+
+The source frontend lives in `frontend/`. Production builds are emitted to `web/`, which keeps the Go embedding flow unchanged.
+
+```bash
+npm --prefix frontend run dev
+```
+
+Vite proxies `/api` to `http://localhost:8080` during frontend development. For production or Go-only local testing, rebuild the static bundle:
+
+```bash
+npm --prefix frontend run build
+go run .
+```
+
+### Live Server
+
+VS Code Live Server can preview the built `web/` folder while Go serves the API:
+
+```bash
+go run .
+npm --prefix frontend run build:watch
+```
+
+Then open `web/index.html` with Live Server. The frontend detects Live Server ports `5500`-`5505` and sends API requests to `http://localhost:8080/api`.
+
 ## Configuration
 
 Main variables:
@@ -55,8 +84,8 @@ Main variables:
 ```env
 APP_ADDR=:8080
 PUBLIC_BASE_URL=http://localhost:8080
-SITE_BRAND_NAME=NorthVPN
-SUPPORT_TELEGRAM_URL=https://t.me/your_vpn_support
+SITE_BRAND_NAME=FlowPass
+SUPPORT_TELEGRAM_URL=https://t.me/your_support
 SUPPORT_EMAIL=support@example.com
 DATA_DIR=data
 CHECKOUT_ENABLED=true

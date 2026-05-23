@@ -1,3 +1,3 @@
-module vpn_web
+module access_web
 
 go 1.26

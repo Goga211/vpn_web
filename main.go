@@ -9,10 +9,10 @@ import (
 	"strings"
 	"time"
 
-	"vpn_web/internal/api"
-	"vpn_web/internal/checkout"
-	"vpn_web/internal/config"
-	"vpn_web/internal/remnawave"
+	"access_web/internal/api"
+	"access_web/internal/checkout"
+	"access_web/internal/config"
+	"access_web/internal/remnawave"
 )
 
 //go:embed web/*
@@ -52,7 +52,7 @@ func main() {
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	logger.Info("starting vpn web", "addr", cfg.Addr, "brand", cfg.BrandName, "remnawave", cfg.RemnawaveEnabled())
+	logger.Info("starting web app", "addr", cfg.Addr, "brand", cfg.BrandName, "remnawave", cfg.RemnawaveEnabled())
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		logger.Error("server stopped", "err", err)
 		os.Exit(1)

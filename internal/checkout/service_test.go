@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"vpn_web/internal/remnawave"
+	"access_web/internal/remnawave"
 )
 
 func TestServiceMarksCheckoutFailedWhenRemnawaveIsDisabled(t *testing.T) {
