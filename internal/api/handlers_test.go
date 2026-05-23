@@ -9,9 +9,9 @@ import (
 	"strings"
 	"testing"
 
-	"vpn_web/internal/checkout"
-	"vpn_web/internal/config"
-	"vpn_web/internal/remnawave"
+	"access_web/internal/checkout"
+	"access_web/internal/config"
+	"access_web/internal/remnawave"
 )
 
 func TestCheckoutRequiresConfiguredRemnawave(t *testing.T) {
@@ -21,7 +21,7 @@ func TestCheckoutRequiresConfiguredRemnawave(t *testing.T) {
 	}
 	remna := remnawave.New(remnawave.Config{})
 	server := NewServer(
-		config.Config{CheckoutEnabled: true, BrandName: "TestVPN"},
+		config.Config{CheckoutEnabled: true, BrandName: "TestBrand"},
 		checkout.NewService(store, remna, checkout.ServiceConfig{}),
 		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
 	)
@@ -105,7 +105,7 @@ func TestCheckoutProvisionsUserThroughRemnawave(t *testing.T) {
 	}
 	remnawaveClient := remnawave.New(remnawave.Config{BaseURL: remna.URL, Username: "admin", Password: "secret"})
 	server := NewServer(
-		config.Config{CheckoutEnabled: true, BrandName: "TestVPN", RemnawaveTag: "WEB"},
+		config.Config{CheckoutEnabled: true, BrandName: "TestBrand", RemnawaveTag: "WEB"},
 		checkout.NewService(store, remnawaveClient, checkout.ServiceConfig{RemnawaveTag: "WEB"}),
 		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
 	)
@@ -147,7 +147,7 @@ func TestCheckoutRejectsLongContactFields(t *testing.T) {
 		t.Fatalf("NewStore() error = %v", err)
 	}
 	server := NewServer(
-		config.Config{CheckoutEnabled: true, BrandName: "TestVPN"},
+		config.Config{CheckoutEnabled: true, BrandName: "TestBrand"},
 		checkout.NewService(store, remnawave.New(remnawave.Config{}), checkout.ServiceConfig{}),
 		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
 	)
@@ -170,7 +170,7 @@ func TestSecurityHeadersAreSet(t *testing.T) {
 		t.Fatalf("NewStore() error = %v", err)
 	}
 	server := NewServer(
-		config.Config{CheckoutEnabled: true, BrandName: "TestVPN"},
+		config.Config{CheckoutEnabled: true, BrandName: "TestBrand"},
 		checkout.NewService(store, remnawave.New(remnawave.Config{}), checkout.ServiceConfig{}),
 		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
 	)

@@ -33,8 +33,8 @@ func Load() Config {
 	return Config{
 		Addr:                    getEnv("APP_ADDR", ":8080"),
 		PublicBaseURL:           strings.TrimRight(getEnv("PUBLIC_BASE_URL", "http://localhost:8080"), "/"),
-		BrandName:               getEnv("SITE_BRAND_NAME", "NorthVPN"),
-		SupportTelegramURL:      getEnv("SUPPORT_TELEGRAM_URL", "https://t.me/your_vpn_support"),
+		BrandName:               getEnv("SITE_BRAND_NAME", "FlowPass"),
+		SupportTelegramURL:      getEnv("SUPPORT_TELEGRAM_URL", "https://t.me/your_support"),
 		SupportEmail:            getEnv("SUPPORT_EMAIL", "support@example.com"),
 		DataDir:                 getEnv("DATA_DIR", "data"),
 		RemnawaveBaseURL:        remnawaveBaseURL,

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"vpn_web/internal/remnawave"
+	"access_web/internal/remnawave"
 )
 
 var (

@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"vpn_web/internal/checkout"
-	"vpn_web/internal/config"
+	"access_web/internal/checkout"
+	"access_web/internal/config"
 )
 
 type Server struct {
