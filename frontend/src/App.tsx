@@ -188,10 +188,10 @@ const faqs = [
 ]
 
 const fieldClass =
-  'h-12 w-full rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[var(--text)] outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent-soft)]'
+  'form-field h-12 w-full rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[var(--text)] outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent-soft)]'
 
 const textAreaClass =
-  'min-h-24 w-full resize-y rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 py-3 text-[var(--text)] outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent-soft)]'
+  'form-field min-h-24 w-full resize-y rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 py-3 text-[var(--text)] outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent-soft)]'
 
 function App() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
@@ -439,13 +439,13 @@ function Hero({ brandName }: { brandName: string }) {
   return (
     <section
       id="top"
-      className="relative isolate min-h-[calc(100svh-72px)] overflow-hidden border-b border-[var(--line)] bg-[var(--page-bg)]"
+      className="hero-section relative isolate min-h-[calc(100svh-72px)] overflow-hidden border-b border-[var(--line)]"
     >
       <div className="hero-scene" aria-hidden="true" />
 
-      <div className="relative z-10 mx-auto grid min-h-[calc(100svh-72px)] w-[min(1180px,calc(100vw-32px))] items-center gap-8 py-10 sm:py-14 lg:grid-cols-[minmax(0,0.95fr)_minmax(360px,0.72fr)] lg:py-16">
-        <div className="max-w-4xl">
-          <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-[var(--line)] bg-[color-mix(in_srgb,var(--surface)_86%,transparent)] px-3 py-2 text-sm font-bold text-[var(--muted)] shadow-[0_10px_24px_rgba(23,38,27,0.05)] backdrop-blur-xl">
+      <div className="hero-layout relative z-10 mx-auto grid min-h-[calc(100svh-72px)] w-[min(1180px,calc(100vw-32px))] items-center gap-10 py-10 sm:py-14 lg:grid-cols-[minmax(0,0.9fr)_minmax(390px,0.72fr)] lg:py-16">
+        <div className="hero-copy max-w-4xl">
+          <div className="hero-kicker">
             <Sparkles aria-hidden="true" className="size-4 text-[var(--accent-strong)]" />
             {brandName}
           </div>
@@ -473,60 +473,61 @@ function Hero({ brandName }: { brandName: string }) {
             </a>
           </div>
 
-          <div className="mt-12 grid gap-3 sm:grid-cols-3 lg:max-w-3xl">
+          <div className="hero-proof mt-12 grid gap-3 sm:grid-cols-3 lg:max-w-3xl">
             {[
               ['1 клик', 'оформление на сайте'],
               ['сразу', 'личная ссылка'],
               ['до 10', 'устройств на тарифе'],
             ].map(([value, label]) => (
               <div
-                className="rounded-lg border border-[var(--line)] bg-[color-mix(in_srgb,var(--surface)_86%,transparent)] p-4 shadow-[0_10px_28px_rgba(23,38,27,0.04)] backdrop-blur-xl"
+                className="proof-item"
                 key={value}
               >
-                <div className="text-xl font-extrabold">{value}</div>
-                <div className="mt-1 text-sm font-semibold text-[var(--muted)]">{label}</div>
+                <div>{value}</div>
+                <span>{label}</span>
               </div>
             ))}
           </div>
         </div>
 
-        <div className="hero-panel relative hidden lg:block" aria-hidden="true">
-          <div className="rounded-lg border border-[var(--line)] bg-[color-mix(in_srgb,var(--surface)_92%,transparent)] p-5 shadow-[var(--shadow)] backdrop-blur-xl">
-            <div className="flex items-center justify-between gap-4">
+        <div className="product-preview hidden lg:block" aria-hidden="true">
+          <div className="preview-shell">
+            <div className="preview-topbar">
+              <span>{brandName}</span>
+              <span>online</span>
+            </div>
+            <div className="preview-main">
               <div>
-                <div className="text-sm font-extrabold text-[var(--muted)]">Личный кабинет</div>
-                <div className="mt-2 text-3xl font-extrabold">Подписка активна</div>
+                <p>Текущий тариф</p>
+                <strong>3 месяца</strong>
               </div>
-              <span className="grid size-12 place-items-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent-strong)]">
-                <Check aria-hidden="true" className="size-6" />
+              <span className="preview-status">
+                <Check aria-hidden="true" className="size-4" />
+                активен
               </span>
             </div>
-            <div className="mt-5 rounded-lg bg-[var(--surface-muted)] p-4">
-              <div className="flex items-center justify-between text-sm font-extrabold">
-                <span>Период</span>
-                <span>90 дней</span>
-              </div>
-              <div className="mt-4 h-2 rounded-full bg-[color-mix(in_srgb,var(--accent)_16%,var(--surface))]">
-                <div className="h-full w-2/3 rounded-full bg-[var(--accent)]" />
-              </div>
+            <div className="preview-progress">
+              <span />
             </div>
-            <div className="mt-3 grid grid-cols-2 gap-3">
+            <div className="preview-grid">
               {[
+                ['90', 'дней'],
                 ['5', 'устройств'],
-                ['24/7', 'поддержка'],
+                ['24/7', 'помощь'],
+                ['1', 'ссылка'],
               ].map(([value, label]) => (
-                <div className="rounded-lg bg-[var(--surface-muted)] p-4" key={label}>
-                  <div className="text-2xl font-extrabold">{value}</div>
-                  <div className="mt-1 text-xs font-bold text-[var(--muted)]">{label}</div>
+                <div key={label}>
+                  <strong>{value}</strong>
+                  <span>{label}</span>
                 </div>
               ))}
             </div>
-            <div className="mt-3 flex items-center justify-between rounded-lg border border-[var(--line)] bg-[var(--surface)] p-4">
-              <div>
-                <div className="text-sm font-extrabold">Ссылка готова</div>
-                <div className="mt-1 text-xs font-bold text-[var(--muted)]">Можно открыть на любом устройстве</div>
-              </div>
-              <ArrowRight aria-hidden="true" className="size-5 text-[var(--accent-strong)]" />
+            <div className="preview-link">
+              <span>
+                <Copy aria-hidden="true" className="size-4" />
+                Ссылка готова
+              </span>
+              <ArrowRight aria-hidden="true" className="size-4" />
             </div>
           </div>
         </div>
@@ -568,36 +569,36 @@ function ProcessSection() {
   ]
 
   return (
-    <section id="process" className="process-section border-b border-[var(--line)] bg-[var(--surface)]">
-      <div className="mx-auto grid min-h-[calc(100svh-72px)] w-[min(1180px,calc(100vw-32px))] gap-10 py-16 lg:grid-cols-[minmax(0,0.82fr)_minmax(420px,0.9fr)] lg:items-center lg:py-20">
-        <div>
+    <section id="process" className="process-section border-b border-[var(--line)]">
+      <div className="process-layout mx-auto grid min-h-[calc(100svh-72px)] w-[min(1180px,calc(100vw-32px))] content-center gap-10 py-16 lg:py-20">
+        <div className="process-copy">
           <div data-reveal>
-            <p className="mb-3 text-sm font-black uppercase text-[var(--accent-strong)]">
+            <p className="mb-3 text-sm font-extrabold uppercase text-[var(--accent-strong)]">
               Как оформляется
             </p>
-            <h2 className="max-w-3xl text-4xl font-black leading-tight sm:text-5xl">
+            <h2 className="mx-auto max-w-4xl text-4xl font-extrabold leading-tight sm:text-5xl">
               От выбора тарифа до готовой ссылки без ручного ожидания
             </h2>
-            <p className="mt-5 max-w-2xl text-lg font-medium leading-8 text-[var(--muted)]">
+            <p className="mx-auto mt-5 max-w-2xl text-lg font-medium leading-8 text-[var(--muted)]">
               Клиент проходит понятный путь на сайте: выбирает тариф, оставляет контакт,
               подтверждает оплату и получает личную страницу прямо в браузере.
             </p>
           </div>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
+          <div className="process-stats mx-auto mt-8 grid max-w-3xl gap-3 sm:grid-cols-3">
             {[
               ['1 форма', 'тариф, Telegram или email'],
               ['4 шага', 'весь процесс прозрачен'],
               ['сразу', 'ссылка после выдачи'],
             ].map(([value, label], index) => (
               <div
-                className="rounded-lg border border-[var(--line)] bg-[var(--page-bg)] p-4"
+                className="process-stat"
                 key={value}
                 data-reveal
                 data-reveal-delay={index}
               >
-                <div className="text-xl font-black">{value}</div>
-                <div className="mt-1 text-sm font-semibold text-[var(--muted)]">{label}</div>
+                <div>{value}</div>
+                <span>{label}</span>
               </div>
             ))}
           </div>
@@ -613,27 +614,26 @@ function ProcessSection() {
           </a>
         </div>
 
-        <div className="grid gap-3">
+        <div className="flow-panel">
           {steps.map((step, index) => (
             <article
-              className="process-step grid gap-4 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-4 shadow-[0_1px_0_rgba(0,0,0,0.03)] sm:grid-cols-[48px_1fr_auto]"
+              className="flow-step"
               key={step.number}
               data-reveal
               data-reveal-delay={index}
             >
-              <div className={clsx('grid size-12 place-items-center rounded-lg', step.tone)}>
+              <div className={clsx('flow-icon', step.tone)}>
                 <step.icon aria-hidden="true" className="size-5" />
               </div>
               <div>
-                <div className="text-xs font-black uppercase text-[var(--muted)]">
+                <div className="text-xs font-extrabold uppercase text-[var(--muted)]">
                   Шаг {step.number}
                 </div>
-                <h3 className="mt-1 text-lg font-black">{step.title}</h3>
+                <h3 className="mt-1 text-lg font-extrabold">{step.title}</h3>
                 <p className="mt-2 text-sm font-medium leading-6 text-[var(--muted)]">
                   {step.text}
                 </p>
               </div>
-              <Check aria-hidden="true" className="hidden size-5 self-center text-[var(--teal)] sm:block" />
             </article>
           ))}
         </div>
@@ -644,7 +644,7 @@ function ProcessSection() {
 
 function FeatureSection() {
   return (
-    <section id="features" className="border-b border-[var(--line)] bg-[var(--surface)] py-16 sm:py-20">
+    <section id="features" className="feature-section border-b border-[var(--line)] py-16 sm:py-20">
       <div className="mx-auto w-[min(1180px,calc(100vw-32px))]">
         <SectionHeader
           eyebrow="Почему удобно"
@@ -654,12 +654,12 @@ function FeatureSection() {
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {features.map((feature, index) => (
             <article
-              className="rounded-lg border border-[var(--line)] bg-[var(--surface)] p-5 shadow-[0_1px_0_rgba(0,0,0,0.03)]"
+              className="feature-card"
               key={feature.title}
               data-reveal
               data-reveal-delay={index}
             >
-              <div className={clsx('mb-5 grid size-11 place-items-center rounded-lg', feature.tone)}>
+              <div className={clsx('feature-icon', feature.tone)}>
                 <feature.icon aria-hidden="true" className="size-5" />
               </div>
               <h3 className="text-lg font-black">{feature.title}</h3>
@@ -676,24 +676,28 @@ function FeatureSection() {
 
 function ServicesSection() {
   return (
-    <section id="services" className="border-b border-[var(--line)] bg-[var(--page-bg)] py-16 sm:py-20">
+    <section id="services" className="services-section border-b border-[var(--line)] py-16 sm:py-20">
       <div className="mx-auto w-[min(1180px,calc(100vw-32px))]">
         <SectionHeader
           eyebrow="Сценарии"
           title="Для привычных задач без лишней настройки"
           text="Сервис закрывает ежедневные сценарии: рабочие кабинеты, общение, видео и поездки."
         />
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="service-grid">
           {services.map((service, index) => (
             <article
-              className="group grid gap-5 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-5 transition hover:border-[var(--line-strong)] lg:grid-cols-[56px_1fr]"
+              className="service-card group transition"
               key={service.title}
               data-reveal
               data-reveal-delay={index}
             >
+              <div className="service-card-top">
+                <span>{service.label}</span>
+                <span>0{index + 1}</span>
+              </div>
               <div
                 className={clsx(
-                  'grid size-14 place-items-center rounded-lg text-white',
+                  'service-icon grid size-14 place-items-center text-white',
                   index === 0 && 'bg-[var(--rose)]',
                   index === 1 && 'bg-[var(--surface-strong)] text-[var(--page-bg)]',
                   index === 2 && 'bg-[var(--accent)]',
@@ -702,10 +706,7 @@ function ServicesSection() {
               >
                 <service.icon aria-hidden="true" className="size-6" />
               </div>
-              <div>
-                <div className="text-xs font-black uppercase text-[var(--muted)]">
-                  {service.label}
-                </div>
+              <div className="service-content">
                 <h3 className="mt-2 text-xl font-black">{service.title}</h3>
                 <p className="mt-3 max-w-xl font-medium leading-7 text-[var(--muted)]">
                   {service.text}
@@ -731,17 +732,21 @@ function PricingSection({
   const visiblePlans = plans.length > 0 ? plans : fallbackPlans
 
   return (
-    <section id="pricing" className="border-b border-[var(--line)] bg-[var(--surface)] py-16 sm:py-20">
-      <div className="mx-auto w-[min(1180px,calc(100vw-32px))]">
-        <div className="mb-8 flex flex-col justify-between gap-5 lg:flex-row lg:items-end">
+    <section id="pricing" className="pricing-section border-b border-[var(--line)] py-16 sm:py-20">
+      <div className="mx-auto grid w-[min(1280px,calc(100vw-32px))] gap-8 lg:grid-cols-[minmax(240px,0.32fr)_minmax(0,1fr)] lg:items-start">
+        <div className="pricing-copy">
           <SectionHeader
             eyebrow="Тарифы"
             title="Выбери срок подписки"
             text="Старшие тарифы дешевле в пересчете на месяц. Объем данных и устройства применяются автоматически."
             compact
           />
+          <div className="pricing-note" data-reveal data-reveal-delay="1">
+            <BadgeCheck aria-hidden="true" className="size-5" />
+            <span>Выбранный тариф сразу попадет в форму оформления.</span>
+          </div>
         </div>
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+        <div className="plan-grid">
           {visiblePlans.map((plan, index) => (
             <PriceCard
               key={plan.id}
@@ -771,10 +776,9 @@ function PriceCard({
   return (
     <button
       className={clsx(
-        'relative flex min-h-56 flex-col rounded-lg border bg-[color-mix(in_srgb,var(--surface)_96%,transparent)] p-5 text-left shadow-[0_1px_0_rgba(23,38,27,0.03)] transition hover:-translate-y-0.5 hover:shadow-[var(--shadow)] sm:min-h-72',
-        selected
-          ? 'border-[color-mix(in_srgb,var(--accent)_54%,var(--line))] ring-4 ring-[var(--accent-soft)]'
-          : 'border-[var(--line)]',
+        'plan-card',
+        selected && 'is-selected',
+        plan.popular && 'is-popular',
       )}
       type="button"
       onClick={onClick}
@@ -783,36 +787,34 @@ function PriceCard({
       data-reveal-delay={revealDelay}
     >
       {plan.popular ? (
-        <span className="absolute left-5 top-0 inline-flex -translate-y-1/2 items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--surface)] px-2.5 py-1 text-xs font-extrabold text-[var(--accent-strong)] shadow-[0_10px_22px_rgba(23,38,27,0.08)]">
+        <span className="plan-badge">
           <Sparkles aria-hidden="true" className="size-3.5" />
           Популярный
         </span>
       ) : null}
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <div className="text-lg font-black">{plan.name}</div>
-          <div className="mt-1 text-sm font-bold text-[var(--muted)]">{plan.period}</div>
+      <div className="plan-head">
+        <div className="plan-title">
+          <div>{plan.name}</div>
+          <span>{plan.period}</span>
         </div>
         {selected ? (
-          <span className="grid size-7 place-items-center rounded-full bg-[var(--accent-soft)] text-[var(--accent-strong)]">
+          <span className="plan-check">
             <Check aria-hidden="true" className="size-4" />
           </span>
         ) : null}
       </div>
-      <div className="mt-6">
-        <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-extrabold sm:text-4xl">{formatPrice(plan.priceRub)}</span>
-        </div>
+      <div className="plan-price">
+        <strong>{formatPrice(plan.priceRub)}</strong>
         {plan.oldPriceRub ? (
-          <div className="mt-1 text-sm font-bold text-[var(--muted)]">
+          <div>
             вместо <span className="line-through">{formatPrice(plan.oldPriceRub)}</span>
           </div>
         ) : null}
       </div>
-      <p className="mt-4 text-sm font-medium leading-6 text-[var(--muted)]">
+      <p className="plan-text">
         {plan.highlight || 'Цифровая подписка'}
       </p>
-      <div className="mt-auto flex flex-wrap gap-2 pt-6">
+      <div className="plan-meta">
         <MetaPill>{trafficLabel(plan)}</MetaPill>
         <MetaPill>{plan.devices} устр.</MetaPill>
       </div>
@@ -858,149 +860,168 @@ function CheckoutSection({
   const visiblePlans = plans.length > 0 ? plans : fallbackPlans
 
   return (
-    <section id="checkout" className="border-b border-[var(--line)] bg-[var(--page-bg)] py-16 sm:py-20">
-      <div className="mx-auto grid w-[min(1180px,calc(100vw-32px))] gap-8 lg:grid-cols-[minmax(0,0.82fr)_minmax(380px,0.68fr)] lg:items-start">
-        <div>
-          <SectionHeader
-            eyebrow="Оформление"
-            title="Оплати доступ и получи ссылку подписки"
-            text="Укажи Telegram или email, выбери тариф и заверши оформление. Ссылка появится на этой странице после подтверждения."
-            compact
-          />
-          <div className="mt-8 grid gap-3">
+    <section id="checkout" className="checkout-section border-b border-[var(--line)] py-16 sm:py-20">
+      <div className="checkout-layout mx-auto w-[min(1180px,calc(100vw-32px))]">
+        <div className="checkout-intro">
+          <div>
+            <SectionHeader
+              eyebrow="Оформление"
+              title="Оплати доступ и получи ссылку подписки"
+              text="Укажи Telegram или email, выбери тариф и заверши оформление. Ссылка появится на этой странице после подтверждения."
+              compact
+            />
+          </div>
+          <div className="checkout-mini-metrics" data-reveal data-reveal-delay="1">
             {[
-              ['01', 'Выбор тарифа', 'Клиент видит срок, объем данных, устройства и итоговую цену.'],
-              ['02', 'Подтверждение оплаты', 'Бэк фиксирует оформление и запускает выдачу.'],
-              ['03', 'Подписка готова', 'Ссылка отображается в браузере и доступна для копирования.'],
-            ].map(([number, title, text], index) => (
-              <div
-                className="flex gap-4 rounded-lg border border-[var(--line)] bg-[var(--surface)] p-4"
-                key={number}
-                data-reveal
-                data-reveal-delay={index}
-              >
-                <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[var(--surface-strong)] text-sm font-black text-[var(--page-bg)]">
-                  {number}
-                </span>
-                <div>
-                  <h3 className="font-black">{title}</h3>
-                  <p className="mt-1 text-sm font-medium leading-6 text-[var(--muted)]">
-                    {text}
-                  </p>
-                </div>
+              ['01', 'тариф выбран'],
+              ['02', 'контакт указан'],
+              ['03', 'ссылка готова'],
+            ].map(([number, label]) => (
+              <div className="checkout-mini-metric" key={number}>
+                <span>{number}</span>
+                {label}
               </div>
             ))}
           </div>
         </div>
 
         <form
-          className="rounded-lg border border-[var(--line)] bg-[color-mix(in_srgb,var(--surface)_96%,transparent)] p-5 shadow-[var(--shadow)]"
+          className="checkout-workspace"
           onSubmit={onSubmit}
           data-reveal
           data-reveal-delay="2"
         >
           {configNotice ? (
-            <div className="mb-4 rounded-lg border border-[color-mix(in_srgb,var(--amber)_42%,var(--line))] bg-[var(--amber-soft)] p-3 text-sm font-bold leading-6">
+            <div className="notice-card mb-4 rounded-lg border border-[color-mix(in_srgb,var(--amber)_42%,var(--line))] bg-[var(--amber-soft)] p-3 text-sm font-bold leading-6">
               {configNotice}
             </div>
           ) : null}
 
-          <div className="mb-5 rounded-lg border border-[var(--line)] bg-[var(--surface-muted)] p-4">
-            <div className="text-xs font-black uppercase text-[var(--muted)]">
-              Выбранный тариф
-            </div>
-            <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
-              <div>
-                <div className="text-xl font-black">
-                  {selectedPlan?.name || 'Загрузка'}
+          <div className="checkout-grid">
+            <aside className="checkout-receipt" aria-label="Выбранный тариф">
+              <div className="receipt-orbit" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+              </div>
+              <div className="receipt-top">
+                <span>Активный заказ</span>
+                <span>
+                  <BadgeCheck aria-hidden="true" className="size-4" />
+                  готов к оплате
+                </span>
+              </div>
+              <div className="receipt-plan">
+                <div>
+                  <strong>{selectedPlan?.name || 'Загрузка'}</strong>
+                  <span>{selectedPlan ? `${selectedPlan.period} · ${trafficLabel(selectedPlan)}` : ''}</span>
                 </div>
-                <div className="mt-1 text-sm font-bold text-[var(--muted)]">
-                  {selectedPlan ? `${selectedPlan.period} · ${trafficLabel(selectedPlan)}` : ''}
+                <b>{selectedPlan ? formatPrice(selectedPlan.priceRub) : '...'}</b>
+              </div>
+              <div className="receipt-divider" />
+              <div className="receipt-details">
+                <div>
+                  <span>Устройства</span>
+                  <strong>{selectedPlan ? selectedPlan.devices : '...'}</strong>
+                </div>
+                <div>
+                  <span>Период</span>
+                  <strong>{selectedPlan?.period || '...'}</strong>
                 </div>
               </div>
-              <div className="text-2xl font-black">
-                {selectedPlan ? formatPrice(selectedPlan.priceRub) : '...'}
+              <div className="receipt-status">
+                <Check aria-hidden="true" className="size-4" />
+                Тариф попадет в оформление автоматически
+              </div>
+            </aside>
+
+            <div className="checkout-form">
+              <div className="checkout-form-head">
+                <div>
+                  <span>Форма заказа</span>
+                  <strong>Контакт и тариф</strong>
+                </div>
+                <ArrowRight aria-hidden="true" className="size-5" />
+              </div>
+              <div className="grid gap-4">
+                <div className="checkout-field grid gap-2 text-sm font-black">
+                  Тариф
+                  <PlanSelect plans={visiblePlans} value={selectedPlanId} onChange={onSelectPlan} />
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="checkout-field grid gap-2 text-sm font-black">
+                    Telegram
+                    <input
+                      className={fieldClass}
+                      value={telegram}
+                      onChange={(event) => onTelegramChange(event.currentTarget.value)}
+                      type="text"
+                      name="telegram"
+                      placeholder="@username"
+                      autoComplete="username"
+                    />
+                  </label>
+                  <label className="checkout-field grid gap-2 text-sm font-black">
+                    Email
+                    <input
+                      className={fieldClass}
+                      value={email}
+                      onChange={(event) => onEmailChange(event.currentTarget.value)}
+                      type="email"
+                      name="email"
+                      placeholder="name@example.com"
+                      autoComplete="email"
+                    />
+                  </label>
+                </div>
+
+                <label className="checkout-field grid gap-2 text-sm font-black">
+                  Комментарий
+                  <textarea
+                    className={textAreaClass}
+                    value={contact}
+                    onChange={(event) => onContactChange(event.currentTarget.value)}
+                    name="contact"
+                    rows={3}
+                    placeholder="Например: нужен доступ на телефон и ноутбук"
+                  />
+                </label>
+
+                <label className="checkout-consent flex items-start gap-3 text-sm font-bold leading-6 text-[var(--muted)]">
+                  <input
+                    className="mt-1 size-4 rounded border-[var(--line)] accent-[var(--accent)]"
+                    checked={consent}
+                    onChange={(event) => onConsentChange(event.currentTarget.checked)}
+                    type="checkbox"
+                    required
+                  />
+                  <span>Согласен на оформление доступа и обработку данных для выдачи подписки.</span>
+                </label>
+
+                <button
+                  className="primary-action inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 text-sm font-black text-white transition hover:bg-[var(--accent-strong)]"
+                  type="submit"
+                  disabled={submitting}
+                >
+                  <span>{submitting ? 'Оформляем доступ...' : 'Оплатить и получить ссылку'}</span>
+                  <ArrowRight aria-hidden="true" className="size-4" />
+                </button>
+
+                <p
+                  className={clsx(
+                    'min-h-6 text-sm font-bold',
+                    formStatus.kind === 'error' && 'text-[var(--rose)]',
+                    formStatus.kind === 'success' && 'text-[var(--teal)]',
+                    formStatus.kind === 'idle' && 'text-[var(--muted)]',
+                  )}
+                  role="status"
+                  aria-live="polite"
+                >
+                  {formStatus.message}
+                </p>
               </div>
             </div>
-          </div>
-
-          <div className="grid gap-4">
-            <div className="grid gap-2 text-sm font-black">
-              Тариф
-              <PlanSelect plans={visiblePlans} value={selectedPlanId} onChange={onSelectPlan} />
-            </div>
-
-            <div className="grid gap-4 sm:grid-cols-2">
-              <label className="grid gap-2 text-sm font-black">
-                Telegram
-                <input
-                  className={fieldClass}
-                  value={telegram}
-                  onChange={(event) => onTelegramChange(event.currentTarget.value)}
-                  type="text"
-                  name="telegram"
-                  placeholder="@username"
-                  autoComplete="username"
-                />
-              </label>
-              <label className="grid gap-2 text-sm font-black">
-                Email
-                <input
-                  className={fieldClass}
-                  value={email}
-                  onChange={(event) => onEmailChange(event.currentTarget.value)}
-                  type="email"
-                  name="email"
-                  placeholder="name@example.com"
-                  autoComplete="email"
-                />
-              </label>
-            </div>
-
-            <label className="grid gap-2 text-sm font-black">
-              Комментарий
-              <textarea
-                className={textAreaClass}
-                value={contact}
-                onChange={(event) => onContactChange(event.currentTarget.value)}
-                name="contact"
-                rows={3}
-                placeholder="Например: нужен доступ на телефон и ноутбук"
-              />
-            </label>
-
-            <label className="flex items-start gap-3 text-sm font-bold leading-6 text-[var(--muted)]">
-              <input
-                className="mt-1 size-4 rounded border-[var(--line)] accent-[var(--accent)]"
-                checked={consent}
-                onChange={(event) => onConsentChange(event.currentTarget.checked)}
-                type="checkbox"
-                required
-              />
-              <span>Согласен на оформление доступа и обработку данных для выдачи подписки.</span>
-            </label>
-
-            <button
-              className="primary-action inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 text-sm font-black text-white transition hover:bg-[var(--accent-strong)]"
-              type="submit"
-              disabled={submitting}
-            >
-              <span>{submitting ? 'Оформляем доступ...' : 'Оплатить и получить ссылку'}</span>
-              <ArrowRight aria-hidden="true" className="size-4" />
-            </button>
-
-            <p
-              className={clsx(
-                'min-h-6 text-sm font-bold',
-                formStatus.kind === 'error' && 'text-[var(--rose)]',
-                formStatus.kind === 'success' && 'text-[var(--teal)]',
-                formStatus.kind === 'idle' && 'text-[var(--muted)]',
-              )}
-              role="status"
-              aria-live="polite"
-            >
-              {formStatus.message}
-            </p>
           </div>
         </form>
       </div>
@@ -1010,7 +1031,7 @@ function CheckoutSection({
 
 function FaqSection() {
   return (
-    <section className="bg-[var(--surface)] py-16 sm:py-20">
+    <section className="faq-section py-16 sm:py-20">
       <div className="mx-auto w-[min(1180px,calc(100vw-32px))]">
         <SectionHeader
           eyebrow="FAQ"
@@ -1020,7 +1041,7 @@ function FaqSection() {
         <div className="grid items-start gap-4 lg:grid-cols-3">
           {faqs.map((faq, index) => (
             <details
-              className="faq-card group self-start rounded-lg border border-[var(--line)] bg-[var(--surface)] p-0"
+              className="faq-card group self-start p-0"
               key={faq.question}
               data-reveal
               data-reveal-delay={index}
@@ -1156,30 +1177,11 @@ function useMagneticScroll() {
     }
 
     function getScrollTargets() {
-      return Array.from(document.querySelectorAll<HTMLElement>('main > section, body > footer'))
+      return Array.from(document.querySelectorAll<HTMLElement>('main > section, footer'))
     }
 
     function getHeaderHeight() {
       return document.querySelector('header')?.getBoundingClientRect().height || 72
-    }
-
-    function getCurrentTargetIndex(targets: HTMLElement[]) {
-      const maxScroll = Math.max(0, document.documentElement.scrollHeight - window.innerHeight)
-      if (window.scrollY >= maxScroll - 2) return targets.length - 1
-
-      const headerHeight = getHeaderHeight()
-      const visibleHeight = Math.max(1, window.innerHeight - headerHeight)
-      const viewportCenter = window.scrollY + headerHeight + visibleHeight / 2
-
-      return targets.reduce(
-        (best, target, index) => {
-          const rect = target.getBoundingClientRect()
-          const sectionCenter = window.scrollY + rect.top + rect.height / 2
-          const distance = Math.abs(sectionCenter - viewportCenter)
-          return distance < best.distance ? { index, distance } : best
-        },
-        { index: 0, distance: Number.POSITIVE_INFINITY },
-      ).index
     }
 
     function hasOpenDialog() {
@@ -1193,18 +1195,7 @@ function useMagneticScroll() {
       )
     }
 
-    function goToRelativeSection(direction: number) {
-      const targets = getScrollTargets()
-      if (!targets.length) return
-
-      const currentIndex = getCurrentTargetIndex(targets)
-      goToTarget(currentIndex + direction, targets)
-    }
-
-    function goToTarget(index: number, currentTargets = getScrollTargets()) {
-      if (!currentTargets.length) return
-
-      const targetIndex = clamp(index, 0, currentTargets.length - 1)
+    function getTargetScrollPosition(targetIndex: number, currentTargets: HTMLElement[]) {
       const targetElement = currentTargets[targetIndex]
       const headerHeight = getHeaderHeight()
       const visibleHeight = Math.max(1, window.innerHeight - headerHeight)
@@ -1223,6 +1214,38 @@ function useMagneticScroll() {
         target = Math.max(0, maxScroll - Math.min(visibleHeight * 0.62, 520))
       }
 
+      return Math.round(target)
+    }
+
+    function goToRelativeSection(direction: number) {
+      const targets = getScrollTargets()
+      if (!targets.length) return
+
+      const positions = targets.map((_, index) => getTargetScrollPosition(index, targets))
+      const currentY = window.scrollY
+      const threshold = clamp(window.innerHeight * 0.08, 56, 120)
+      let targetIndex = -1
+
+      if (direction > 0) {
+        targetIndex = positions.findIndex((position) => position > currentY + threshold)
+      } else {
+        for (let index = positions.length - 1; index >= 0; index -= 1) {
+          if (positions[index] < currentY - threshold) {
+            targetIndex = index
+            break
+          }
+        }
+      }
+
+      if (targetIndex === -1) return
+      goToTarget(targetIndex, targets)
+    }
+
+    function goToTarget(index: number, currentTargets = getScrollTargets()) {
+      if (!currentTargets.length) return
+
+      const targetIndex = clamp(index, 0, currentTargets.length - 1)
+      const target = getTargetScrollPosition(targetIndex, currentTargets)
       if (Math.abs(target - window.scrollY) < 4) return
       animateScrollTo(target)
     }
@@ -1312,7 +1335,6 @@ function useMagneticScroll() {
       const targets = getScrollTargets()
       if (!targets.length) return
 
-      const currentIndex = getCurrentTargetIndex(targets)
       if (event.key === 'Home') {
         goToTarget(0, targets)
         return
@@ -1326,7 +1348,7 @@ function useMagneticScroll() {
         event.key === 'ArrowUp' || event.key === 'PageUp' || (event.key === ' ' && event.shiftKey)
           ? -1
           : 1
-      goToTarget(currentIndex + direction, targets)
+      goToRelativeSection(direction)
     }
 
     window.addEventListener('wheel', onWheel, { passive: false })
@@ -1469,10 +1491,10 @@ function PlanSelect({
   }
 
   return (
-    <div className="relative" data-plan-select ref={rootRef} onKeyDown={handleKeyDown}>
+    <div className="plan-select relative" data-plan-select ref={rootRef} onKeyDown={handleKeyDown}>
       <button
         className={clsx(
-          'flex min-h-16 w-full items-center justify-between gap-4 rounded-lg border bg-[color-mix(in_srgb,var(--surface)_96%,transparent)] px-4 py-3 text-left transition',
+          'plan-select-button flex min-h-16 w-full items-center justify-between gap-4 rounded-lg border bg-[color-mix(in_srgb,var(--surface)_96%,transparent)] px-4 py-3 text-left transition',
           'hover:border-[var(--line-strong)] hover:shadow-[0_14px_28px_rgba(23,38,27,0.08)]',
           'focus:outline-none focus:ring-4 focus:ring-[var(--accent-soft)]',
           open
@@ -1505,7 +1527,7 @@ function PlanSelect({
 
       {open ? (
         <div
-          className="absolute left-0 right-0 top-[calc(100%+8px)] z-40 overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--surface)] p-2 shadow-[0_22px_54px_rgba(23,38,27,0.14)]"
+          className="plan-select-menu absolute left-0 right-0 top-[calc(100%+8px)] z-40 overflow-hidden rounded-lg border border-[var(--line)] bg-[var(--surface)] p-2 shadow-[0_22px_54px_rgba(23,38,27,0.14)]"
           role="listbox"
         >
           <div className="grid max-h-80 gap-1 overflow-y-auto">
@@ -1514,7 +1536,7 @@ function PlanSelect({
               return (
                 <button
                   className={clsx(
-                    'flex w-full items-center justify-between gap-3 rounded-lg px-3 py-3 text-left transition',
+                    'plan-select-option flex w-full items-center justify-between gap-3 rounded-lg px-3 py-3 text-left transition',
                     selected
                       ? 'bg-[var(--accent-soft)] text-[var(--text)]'
                       : 'bg-transparent hover:bg-[var(--surface-muted)]',
