@@ -14,6 +14,7 @@ import {
   Moon,
   Plane,
   Sparkles,
+  SquarePen,
   Sun,
   X,
   Zap,
@@ -686,12 +687,7 @@ function ServiceArtwork({ type }: { type: ServiceArt }) {
   if (type === 'work') {
     return (
       <div className="service-art service-art-work" aria-hidden="true">
-        <svg className="work-edit" viewBox="0 0 180 180" focusable="false">
-          <path d="M46 32H98" />
-          <path d="M132 90v44c0 14-10 24-24 24H46c-14 0-24-10-24-24V56c0-14 10-24 24-24" />
-          <path d="M74 122 128 68c10-10 27-3 27 11 0 4-2 8-5 11l-54 54-28 8 6-30Z" />
-          <path d="M120 76 142 98" />
-        </svg>
+        <SquarePen className="service-art-icon" />
       </div>
     )
   }

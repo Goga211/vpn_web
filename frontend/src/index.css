@@ -639,19 +639,15 @@ strong {
   border-left: 39px solid color-mix(in srgb, #f1a8b0 78%, transparent);
 }
 
-.service-art-work .work-edit {
+.service-art-work .service-art-icon {
   position: absolute;
-  top: 0;
-  right: 18px;
-  width: 154px;
-  height: 154px;
-  color: color-mix(in srgb, #22c55e 74%, transparent);
-  opacity: 0.82;
-  fill: none;
-  stroke: currentColor;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 11;
+  top: 8px;
+  right: 28px;
+  width: 136px;
+  height: 136px;
+  color: color-mix(in srgb, var(--accent) 58%, transparent);
+  opacity: 1;
+  stroke-width: 1.6;
 }
 
 .service-art-icon {
@@ -665,8 +661,8 @@ strong {
 }
 
 .service-art-social .service-art-icon {
-  right: 26px;
-  top: 8px;
+  right: 14px;
+  top: 0;
   width: 150px;
   height: 150px;
   color: color-mix(in srgb, var(--surface-strong) 34%, transparent);
