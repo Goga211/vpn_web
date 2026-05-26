@@ -112,8 +112,13 @@ func (s *Server) handleCheckout(w http.ResponseWriter, r *http.Request) {
 		writeError(w, http.StatusBadRequest, "bad_contact", "Комментарий слишком длинный.")
 		return
 	}
-	if _, ok := checkout.FindPlan(req.PlanID); !ok {
+	plan, ok := checkout.FindPlan(req.PlanID)
+	if !ok {
 		writeError(w, http.StatusBadRequest, "unknown_plan", "Такой тариф не найден.")
+		return
+	}
+	if plan.ID != checkout.TrialPlanID {
+		writeError(w, http.StatusBadRequest, "paid_plans_disabled", "Оплата платных тарифов пока не активна. Сейчас можно оформить только пробный период.")
 		return
 	}
 	if req.Email != "" {

@@ -2,6 +2,8 @@ package checkout
 
 import "time"
 
+const TrialPlanID = "trial"
+
 type Plan struct {
 	ID                string `json:"id"`
 	Name              string `json:"name"`
@@ -18,7 +20,7 @@ type Plan struct {
 
 var Plans = []Plan{
 	{
-		ID:                "trial",
+		ID:                TrialPlanID,
 		Name:              "Пробный период",
 		Period:            "30 дней",
 		Months:            0,
@@ -48,7 +50,7 @@ var Plans = []Plan{
 		OldPriceRUB:       1794,
 		TrafficLimitGB:    0,
 		Devices:           7,
-		Highlight:         "Для семьи и нескольких устройств",
+		Highlight:         "Выгодный период без лишних настроек",
 		ProvisionDuration: (180 * 24 * time.Hour).String(),
 	},
 	{
