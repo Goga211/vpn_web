@@ -85,7 +85,7 @@ Main variables:
 APP_ADDR=:8080
 PUBLIC_BASE_URL=http://localhost:8080
 SITE_BRAND_NAME=FlowPass
-SUPPORT_TELEGRAM_URL=https://t.me/your_support
+SUPPORT_TELEGRAM_URL=https://t.me/bezgraniz_support_bot
 SUPPORT_EMAIL=support@example.com
 DATA_DIR=data
 CHECKOUT_ENABLED=true

@@ -26,7 +26,7 @@ func TestCheckoutRequiresConfiguredRemnawave(t *testing.T) {
 		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
 	)
 
-	body := bytes.NewBufferString(`{"planId":"quarter","telegram":"@client","consent":true}`)
+	body := bytes.NewBufferString(`{"planId":"month","telegram":"@client","consent":true}`)
 	req := httptest.NewRequest(http.MethodPost, "/api/checkout", body)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
@@ -110,7 +110,7 @@ func TestCheckoutProvisionsUserThroughRemnawave(t *testing.T) {
 		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
 	)
 
-	body := bytes.NewBufferString(`{"planId":"quarter","telegram":"@client","consent":true}`)
+	body := bytes.NewBufferString(`{"planId":"month","telegram":"@client","consent":true}`)
 	req := httptest.NewRequest(http.MethodPost, "/api/checkout", body)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
@@ -152,7 +152,7 @@ func TestCheckoutRejectsLongContactFields(t *testing.T) {
 		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
 	)
 
-	body := bytes.NewBufferString(`{"planId":"quarter","telegram":"` + strings.Repeat("a", 65) + `","consent":true}`)
+	body := bytes.NewBufferString(`{"planId":"month","telegram":"` + strings.Repeat("a", 65) + `","consent":true}`)
 	req := httptest.NewRequest(http.MethodPost, "/api/checkout", body)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()

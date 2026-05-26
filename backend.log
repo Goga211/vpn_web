@@ -1,12 +1,1 @@
-time=2026-05-25T19:44:39.047+08:00 level=INFO msg="starting web app" addr=:8080 brand=FlowPass remnawave=true
-time=2026-05-25T19:44:58.477+08:00 level=INFO msg=request method=GET path=/api/health duration=0s
-time=2026-05-25T19:44:58.521+08:00 level=INFO msg=request method=GET path=/ duration=34.4691ms
-time=2026-05-25T19:45:01.382+08:00 level=INFO msg=request method=GET path=/ duration=0s
-time=2026-05-25T19:45:01.411+08:00 level=INFO msg=request method=GET path=/assets/index-Cx9A9Da4.css duration=516.6µs
-time=2026-05-25T19:45:01.411+08:00 level=INFO msg=request method=GET path=/assets/index-CEG9VQfi.js duration=2.0703ms
-time=2026-05-25T19:45:01.436+08:00 level=INFO msg=request method=GET path=/assets/logo.svg duration=0s
-time=2026-05-25T19:45:01.508+08:00 level=INFO msg=request method=GET path=/api/config duration=0s
-time=2026-05-25T19:45:01.509+08:00 level=INFO msg=request method=GET path=/api/plans duration=0s
-time=2026-05-25T19:45:01.553+08:00 level=INFO msg=request method=GET path=/assets/logo.svg duration=0s
-time=2026-05-25T19:45:07.970+08:00 level=INFO msg=request method=GET path=/api/plans duration=0s
-time=2026-05-25T19:45:08.005+08:00 level=INFO msg=request method=GET path=/api/config duration=0s
+time=2026-05-27T01:12:01.042+08:00 level=INFO msg="starting web app" addr=:8080 brand=FlowPass remnawave=true

@@ -31,7 +31,7 @@ type AccessDialog =
 
 const defaultConfig: SiteConfig = {
   brandName: 'FlowPass',
-  supportTelegramUrl: 'https://t.me/bezgraniz_vpn_bot',
+  supportTelegramUrl: 'https://t.me/bezgraniz_support_bot',
   supportEmail: 'support@example.com',
   paymentProvider: 'online',
   checkoutEnabled: true,
@@ -43,18 +43,18 @@ const logoSrc = `${import.meta.env.BASE_URL}assets/logo.svg`
 const fallbackPlans: Plan[] = [
   {
     id: 'trial',
-    name: 'Пробный',
-    period: '3 дня',
+    name: 'Пробный период',
+    period: '30 дней',
     months: 0,
     priceRub: 0,
     trafficLimitGb: 100,
     devices: 2,
-    highlight: 'Для знакомства с сервисом',
-    provisionDuration: '72h0m0s',
+    highlight: '30 дней для проверки скорости',
+    provisionDuration: '720h0m0s',
   },
   {
     id: 'month',
-    name: '1 месяц',
+    name: 'Доступ на месяц',
     period: '30 дней',
     months: 1,
     priceRub: 299,
@@ -62,19 +62,6 @@ const fallbackPlans: Plan[] = [
     devices: 5,
     highlight: 'Гибкий старт',
     provisionDuration: '720h0m0s',
-  },
-  {
-    id: 'quarter',
-    name: '3 месяца',
-    period: '90 дней',
-    months: 3,
-    priceRub: 799,
-    oldPriceRub: 897,
-    trafficLimitGb: 0,
-    devices: 5,
-    popular: true,
-    highlight: 'Оптимально на каждый день',
-    provisionDuration: '2160h0m0s',
   },
   {
     id: 'halfyear',
@@ -191,17 +178,13 @@ const faqs = [
 const fieldClass =
   'form-field h-12 w-full rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[var(--text)] outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent-soft)]'
 
-const textAreaClass =
-  'form-field min-h-24 w-full resize-y rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 py-3 text-[var(--text)] outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent-soft)]'
-
 function App() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
   const [config, setConfig] = useState<SiteConfig>(defaultConfig)
   const [plans, setPlans] = useState<Plan[]>([])
-  const [selectedPlanId, setSelectedPlanId] = useState('quarter')
+  const [selectedPlanId, setSelectedPlanId] = useState('trial')
   const [telegram, setTelegram] = useState('')
   const [email, setEmail] = useState('')
-  const [contact, setContact] = useState('')
   const [consent, setConsent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [formStatus, setFormStatus] = useState<FormStatus>({
@@ -288,7 +271,6 @@ function App() {
         planId: selectedPlan.id,
         telegram: telegram.trim(),
         email: email.trim(),
-        contact: contact.trim(),
         consent,
       })
       setFormStatus({
@@ -298,7 +280,6 @@ function App() {
       setDialog({ type: 'success', checkout: result.checkout, payment: result.payment })
       setTelegram('')
       setEmail('')
-      setContact('')
       setConsent(false)
     } catch (error) {
       const message =
@@ -341,13 +322,11 @@ function App() {
           onSelectPlan={setSelectedPlanId}
           telegram={telegram}
           email={email}
-          contact={contact}
           consent={consent}
           submitting={submitting}
           formStatus={formStatus}
           onTelegramChange={setTelegram}
           onEmailChange={setEmail}
-          onContactChange={setContact}
           onConsentChange={setConsent}
           onSubmit={handleCheckout}
         />
@@ -500,7 +479,7 @@ function Hero({ brandName }: { brandName: string }) {
             <div className="preview-main">
               <div>
                 <p>Текущий тариф</p>
-                <strong>3 месяца</strong>
+                <strong>30 дней</strong>
               </div>
               <span className="preview-status">
                 <Check aria-hidden="true" className="size-4" />
@@ -512,8 +491,8 @@ function Hero({ brandName }: { brandName: string }) {
             </div>
             <div className="preview-grid">
               {[
-                ['90', 'дней'],
-                ['5', 'устройств'],
+                ['30', 'дней'],
+                ['2', 'устройства'],
                 ['24/7', 'помощь'],
                 ['1', 'ссылка'],
               ].map(([value, label]) => (
@@ -814,16 +793,16 @@ function PriceCard({
           Популярный
         </span>
       ) : null}
+      {selected ? (
+        <span className="plan-check">
+          <Check aria-hidden="true" className="size-4" />
+        </span>
+      ) : null}
       <div className="plan-head">
         <div className="plan-title">
           <div>{plan.name}</div>
           <span>{plan.period}</span>
         </div>
-        {selected ? (
-          <span className="plan-check">
-            <Check aria-hidden="true" className="size-4" />
-          </span>
-        ) : null}
       </div>
       <div className="plan-price">
         <strong>{formatPrice(plan.priceRub)}</strong>
@@ -852,13 +831,11 @@ function CheckoutSection({
   onSelectPlan,
   telegram,
   email,
-  contact,
   consent,
   submitting,
   formStatus,
   onTelegramChange,
   onEmailChange,
-  onContactChange,
   onConsentChange,
   onSubmit,
 }: {
@@ -869,13 +846,11 @@ function CheckoutSection({
   onSelectPlan: (planId: string) => void
   telegram: string
   email: string
-  contact: string
   consent: boolean
   submitting: boolean
   formStatus: FormStatus
   onTelegramChange: (value: string) => void
   onEmailChange: (value: string) => void
-  onContactChange: (value: string) => void
   onConsentChange: (value: boolean) => void
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
 }) {
@@ -997,18 +972,6 @@ function CheckoutSection({
                     />
                   </label>
                 </div>
-
-                <label className="checkout-field grid gap-2 text-sm font-black">
-                  Комментарий
-                  <textarea
-                    className={textAreaClass}
-                    value={contact}
-                    onChange={(event) => onContactChange(event.currentTarget.value)}
-                    name="contact"
-                    rows={3}
-                    placeholder="Например: нужен доступ на телефон и ноутбук"
-                  />
-                </label>
 
                 <label className="checkout-consent flex items-start gap-3 text-sm font-bold leading-6 text-[var(--muted)]">
                   <input
