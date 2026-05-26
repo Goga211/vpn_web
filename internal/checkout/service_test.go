@@ -15,7 +15,7 @@ func TestServiceMarksCheckoutFailedWhenRemnawaveIsDisabled(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewStore() error = %v", err)
 	}
-	created, err := store.Create(CreateInput{PlanID: "quarter", Telegram: "@client"})
+	created, err := store.Create(CreateInput{PlanID: "month", Telegram: "@client"})
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -45,7 +45,7 @@ func TestServiceProvisionsCheckoutAndFallsBackToSubscriptionLookup(t *testing.T)
 	})
 
 	got, err := service.Start(context.Background(), CreateInput{
-		PlanID:   "quarter",
+		PlanID:   "month",
 		Contact:  "@client",
 		Email:    "client@example.com",
 		Telegram: "@client",
@@ -101,7 +101,7 @@ func TestServiceRejectsUnsafeSubscriptionURL(t *testing.T) {
 	service := NewService(store, client, ServiceConfig{RemnawaveTag: "WEB"})
 
 	got, err := service.Start(context.Background(), CreateInput{
-		PlanID:   "quarter",
+		PlanID:   "month",
 		Telegram: "@client",
 	})
 	if !errors.Is(err, ErrSubscriptionURLMissing) {

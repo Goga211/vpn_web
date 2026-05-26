@@ -39,7 +39,6 @@ export type CheckoutPayload = {
   planId: string
   telegram: string
   email: string
-  contact: string
   consent: boolean
 }
 

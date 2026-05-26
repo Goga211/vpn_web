@@ -15,7 +15,7 @@ func TestStorePersistsCheckouts(t *testing.T) {
 	}
 
 	created, err := store.Create(CreateInput{
-		PlanID:  "quarter",
+		PlanID:  "month",
 		Contact: "@client",
 	})
 	if err != nil {
@@ -33,7 +33,7 @@ func TestStorePersistsCheckouts(t *testing.T) {
 	if !ok {
 		t.Fatalf("reloaded checkout %q not found", created.ID)
 	}
-	if got.PlanID != "quarter" || got.Contact != "@client" {
+	if got.PlanID != "month" || got.Contact != "@client" {
 		t.Fatalf("reloaded checkout = %+v", got)
 	}
 

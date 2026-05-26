@@ -7,15 +7,14 @@ import {
   ChevronDown,
   CircleDollarSign,
   Copy,
-  Globe2,
   Headphones,
   Laptop,
   Mail,
+  MessageCircle,
   Moon,
-  PlugZap,
-  Router,
-  Smartphone,
+  Plane,
   Sparkles,
+  SquarePen,
   Sun,
   X,
   Zap,
@@ -32,7 +31,7 @@ type AccessDialog =
 
 const defaultConfig: SiteConfig = {
   brandName: 'FlowPass',
-  supportTelegramUrl: 'https://t.me/your_support',
+  supportTelegramUrl: 'https://t.me/bezgraniz_support_bot',
   supportEmail: 'support@example.com',
   paymentProvider: 'online',
   checkoutEnabled: true,
@@ -44,18 +43,18 @@ const logoSrc = `${import.meta.env.BASE_URL}assets/logo.svg`
 const fallbackPlans: Plan[] = [
   {
     id: 'trial',
-    name: 'Пробный',
-    period: '3 дня',
+    name: 'Пробный период',
+    period: '30 дней',
     months: 0,
     priceRub: 0,
     trafficLimitGb: 100,
     devices: 2,
-    highlight: 'Для знакомства с сервисом',
-    provisionDuration: '72h0m0s',
+    highlight: '30 дней для проверки скорости',
+    provisionDuration: '720h0m0s',
   },
   {
     id: 'month',
-    name: '1 месяц',
+    name: 'Доступ на месяц',
     period: '30 дней',
     months: 1,
     priceRub: 299,
@@ -63,19 +62,6 @@ const fallbackPlans: Plan[] = [
     devices: 5,
     highlight: 'Гибкий старт',
     provisionDuration: '720h0m0s',
-  },
-  {
-    id: 'quarter',
-    name: '3 месяца',
-    period: '90 дней',
-    months: 3,
-    priceRub: 799,
-    oldPriceRub: 897,
-    trafficLimitGb: 0,
-    devices: 5,
-    popular: true,
-    highlight: 'Оптимально на каждый день',
-    provisionDuration: '2160h0m0s',
   },
   {
     id: 'halfyear',
@@ -142,30 +128,32 @@ const features: Array<{
   },
 ]
 
-const services: Array<{ label: string; title: string; text: string; icon: LucideIcon }> = [
+type ServiceArt = 'media' | 'social' | 'work' | 'travel'
+
+const services: Array<{ label: string; title: string; text: string; art: ServiceArt }> = [
   {
     label: 'Медиа',
     title: 'Видео и стриминг',
     text: 'Стабильный доступ к видео, трансляциям и обучающим платформам.',
-    icon: Globe2,
+    art: 'media',
   },
   {
     label: 'Общение',
     title: 'Соцсети и мессенджеры',
     text: 'Привычные сервисы на телефоне и десктопе без лишних действий.',
-    icon: Smartphone,
+    art: 'social',
   },
   {
     label: 'Работа',
     title: 'Рабочие инструменты',
     text: 'Почта, AI-сервисы, облака, таск-трекеры и ежедневные рабочие кабинеты.',
-    icon: PlugZap,
+    art: 'work',
   },
   {
-    label: 'Поездки',
-    title: 'Поездки',
+    label: 'Путешествия',
+    title: 'Путешествия',
     text: 'В дороге проще сохранить привычные сайты, подписки и личные кабинеты.',
-    icon: Router,
+    art: 'travel',
   },
 ]
 
@@ -190,17 +178,13 @@ const faqs = [
 const fieldClass =
   'form-field h-12 w-full rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 text-[var(--text)] outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent-soft)]'
 
-const textAreaClass =
-  'form-field min-h-24 w-full resize-y rounded-lg border border-[var(--line)] bg-[var(--surface)] px-3.5 py-3 text-[var(--text)] outline-none transition focus:border-[var(--accent)] focus:ring-4 focus:ring-[var(--accent-soft)]'
-
 function App() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
   const [config, setConfig] = useState<SiteConfig>(defaultConfig)
   const [plans, setPlans] = useState<Plan[]>([])
-  const [selectedPlanId, setSelectedPlanId] = useState('quarter')
+  const [selectedPlanId, setSelectedPlanId] = useState('trial')
   const [telegram, setTelegram] = useState('')
   const [email, setEmail] = useState('')
-  const [contact, setContact] = useState('')
   const [consent, setConsent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [formStatus, setFormStatus] = useState<FormStatus>({
@@ -287,7 +271,6 @@ function App() {
         planId: selectedPlan.id,
         telegram: telegram.trim(),
         email: email.trim(),
-        contact: contact.trim(),
         consent,
       })
       setFormStatus({
@@ -297,7 +280,6 @@ function App() {
       setDialog({ type: 'success', checkout: result.checkout, payment: result.payment })
       setTelegram('')
       setEmail('')
-      setContact('')
       setConsent(false)
     } catch (error) {
       const message =
@@ -340,13 +322,11 @@ function App() {
           onSelectPlan={setSelectedPlanId}
           telegram={telegram}
           email={email}
-          contact={contact}
           consent={consent}
           submitting={submitting}
           formStatus={formStatus}
           onTelegramChange={setTelegram}
           onEmailChange={setEmail}
-          onContactChange={setContact}
           onConsentChange={setConsent}
           onSubmit={handleCheckout}
         />
@@ -499,7 +479,7 @@ function Hero({ brandName }: { brandName: string }) {
             <div className="preview-main">
               <div>
                 <p>Текущий тариф</p>
-                <strong>3 месяца</strong>
+                <strong>30 дней</strong>
               </div>
               <span className="preview-status">
                 <Check aria-hidden="true" className="size-4" />
@@ -511,8 +491,8 @@ function Hero({ brandName }: { brandName: string }) {
             </div>
             <div className="preview-grid">
               {[
-                ['90', 'дней'],
-                ['5', 'устройств'],
+                ['30', 'дней'],
+                ['2', 'устройства'],
                 ['24/7', 'помощь'],
                 ['1', 'ссылка'],
               ].map(([value, label]) => (
@@ -539,28 +519,28 @@ function Hero({ brandName }: { brandName: string }) {
 function ProcessSection() {
   const steps = [
     {
-      number: '01',
+      number: '1',
       title: 'Выбираешь тариф',
       text: 'Сначала клиент выбирает срок подписки, цену, объем данных и количество устройств.',
       icon: CircleDollarSign,
       tone: 'text-[var(--accent-strong)] bg-[var(--accent-soft)]',
     },
     {
-      number: '02',
+      number: '2',
       title: 'Оставляешь контакт',
       text: 'Достаточно Telegram или email. По нему можно найти оформление и восстановить доступ.',
       icon: Mail,
       tone: 'text-[var(--teal)] bg-[var(--teal-soft)]',
     },
     {
-      number: '03',
+      number: '3',
       title: 'Оплата подтверждается',
       text: 'После подтверждения сайт фиксирует заказ и запускает активацию профиля.',
       icon: BadgeCheck,
       tone: 'text-[var(--amber)] bg-[var(--amber-soft)]',
     },
     {
-      number: '04',
+      number: '4',
       title: 'Ссылка появляется на сайте',
       text: 'Личная страница подписки открывается в браузере сразу после готовности доступа.',
       icon: Copy,
@@ -674,6 +654,38 @@ function FeatureSection() {
   )
 }
 
+function ServiceArtwork({ type }: { type: ServiceArt }) {
+  if (type === 'media') {
+    return (
+      <div className="service-art service-art-media" aria-hidden="true">
+        <span className="media-play" />
+      </div>
+    )
+  }
+
+  if (type === 'work') {
+    return (
+      <div className="service-art service-art-work" aria-hidden="true">
+        <SquarePen className="service-art-icon" />
+      </div>
+    )
+  }
+
+  if (type === 'social') {
+    return (
+      <div className="service-art service-art-social" aria-hidden="true">
+        <MessageCircle className="service-art-icon" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="service-art service-art-travel" aria-hidden="true">
+      <Plane className="service-art-icon" />
+    </div>
+  )
+}
+
 function ServicesSection() {
   return (
     <section id="services" className="services-section border-b border-[var(--line)] py-16 sm:py-20">
@@ -681,31 +693,20 @@ function ServicesSection() {
         <SectionHeader
           eyebrow="Сценарии"
           title="Для привычных задач без лишней настройки"
-          text="Сервис закрывает ежедневные сценарии: рабочие кабинеты, общение, видео и поездки."
+          text="Сервис закрывает ежедневные сценарии: рабочие кабинеты, общение, видео и путешествия."
         />
         <div className="service-grid">
           {services.map((service, index) => (
             <article
-              className="service-card group transition"
+              className={clsx('service-card group transition', `tone-${index + 1}`)}
               key={service.title}
               data-reveal
               data-reveal-delay={index}
             >
               <div className="service-card-top">
                 <span>{service.label}</span>
-                <span>0{index + 1}</span>
               </div>
-              <div
-                className={clsx(
-                  'service-icon grid size-14 place-items-center text-white',
-                  index === 0 && 'bg-[var(--rose)]',
-                  index === 1 && 'bg-[var(--surface-strong)] text-[var(--page-bg)]',
-                  index === 2 && 'bg-[var(--accent)]',
-                  index === 3 && 'bg-[var(--teal)]',
-                )}
-              >
-                <service.icon aria-hidden="true" className="size-6" />
-              </div>
+              <ServiceArtwork type={service.art} />
               <div className="service-content">
                 <h3 className="mt-2 text-xl font-black">{service.title}</h3>
                 <p className="mt-3 max-w-xl font-medium leading-7 text-[var(--muted)]">
@@ -792,16 +793,16 @@ function PriceCard({
           Популярный
         </span>
       ) : null}
+      {selected ? (
+        <span className="plan-check">
+          <Check aria-hidden="true" className="size-4" />
+        </span>
+      ) : null}
       <div className="plan-head">
         <div className="plan-title">
           <div>{plan.name}</div>
           <span>{plan.period}</span>
         </div>
-        {selected ? (
-          <span className="plan-check">
-            <Check aria-hidden="true" className="size-4" />
-          </span>
-        ) : null}
       </div>
       <div className="plan-price">
         <strong>{formatPrice(plan.priceRub)}</strong>
@@ -830,13 +831,11 @@ function CheckoutSection({
   onSelectPlan,
   telegram,
   email,
-  contact,
   consent,
   submitting,
   formStatus,
   onTelegramChange,
   onEmailChange,
-  onContactChange,
   onConsentChange,
   onSubmit,
 }: {
@@ -847,13 +846,11 @@ function CheckoutSection({
   onSelectPlan: (planId: string) => void
   telegram: string
   email: string
-  contact: string
   consent: boolean
   submitting: boolean
   formStatus: FormStatus
   onTelegramChange: (value: string) => void
   onEmailChange: (value: string) => void
-  onContactChange: (value: string) => void
   onConsentChange: (value: boolean) => void
   onSubmit: (event: React.FormEvent<HTMLFormElement>) => void
 }) {
@@ -873,9 +870,9 @@ function CheckoutSection({
           </div>
           <div className="checkout-mini-metrics" data-reveal data-reveal-delay="1">
             {[
-              ['01', 'тариф выбран'],
-              ['02', 'контакт указан'],
-              ['03', 'ссылка готова'],
+              ['1', 'тариф выбран'],
+              ['2', 'контакт указан'],
+              ['3', 'ссылка готова'],
             ].map(([number, label]) => (
               <div className="checkout-mini-metric" key={number}>
                 <span>{number}</span>
@@ -975,18 +972,6 @@ function CheckoutSection({
                     />
                   </label>
                 </div>
-
-                <label className="checkout-field grid gap-2 text-sm font-black">
-                  Комментарий
-                  <textarea
-                    className={textAreaClass}
-                    value={contact}
-                    onChange={(event) => onContactChange(event.currentTarget.value)}
-                    name="contact"
-                    rows={3}
-                    placeholder="Например: нужен доступ на телефон и ноутбук"
-                  />
-                </label>
 
                 <label className="checkout-consent flex items-start gap-3 text-sm font-bold leading-6 text-[var(--muted)]">
                   <input
