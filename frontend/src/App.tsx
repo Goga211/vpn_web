@@ -8,7 +8,6 @@ import {
   CircleDollarSign,
   Copy,
   Headphones,
-  Laptop,
   Mail,
   MessageCircle,
   Moon,
@@ -30,7 +29,7 @@ type AccessDialog =
   | { type: 'failure'; checkout?: Checkout; message: string }
 
 const defaultConfig: SiteConfig = {
-  brandName: 'FlowPass',
+  brandName: 'Простор',
   supportTelegramUrl: 'https://t.me/bezgraniz_support_bot',
   supportEmail: 'support@example.com',
   paymentProvider: 'online',
@@ -38,7 +37,9 @@ const defaultConfig: SiteConfig = {
   provisioningEnabled: false,
 }
 
-const logoSrc = `${import.meta.env.BASE_URL}assets/logo.svg`
+const TRIAL_PLAN_ID = 'trial'
+const logoLightSrc = `${import.meta.env.BASE_URL}assets/logo-light.svg`
+const logoDarkSrc = `${import.meta.env.BASE_URL}assets/logo-dark.svg`
 
 const fallbackPlans: Plan[] = [
   {
@@ -72,7 +73,7 @@ const fallbackPlans: Plan[] = [
     oldPriceRub: 1794,
     trafficLimitGb: 0,
     devices: 7,
-    highlight: 'Для семьи и нескольких устройств',
+    highlight: 'Выгодный период без лишних настроек',
     provisionDuration: '4320h0m0s',
   },
   {
@@ -90,11 +91,11 @@ const fallbackPlans: Plan[] = [
 ]
 
 const navItems = [
-  ['Как оформить', '#process'],
+  ['Главная', '#top'],
   ['Сценарии', '#services'],
   ['Тарифы', '#pricing'],
   ['Оформить', '#checkout'],
-]
+] as const
 
 const features: Array<{
   title: string
@@ -104,21 +105,15 @@ const features: Array<{
 }> = [
   {
     title: 'Моментальная выдача',
-    text: 'После подтверждения оплаты личная страница подписки появляется прямо на сайте.',
+    text: 'После оформления личная страница подписки появляется прямо на сайте.',
     icon: Zap,
     tone: 'text-[var(--accent-strong)] bg-[var(--accent-soft)]',
   },
   {
     title: 'Лимиты без сюрпризов',
-    text: 'Срок, объем данных и количество устройств берутся из выбранного тарифа автоматически.',
+    text: 'Срок подписки и объем данных берутся из выбранного тарифа автоматически.',
     icon: BadgeCheck,
     tone: 'text-[var(--teal)] bg-[var(--teal-soft)]',
-  },
-  {
-    title: 'Устройства рядом',
-    text: 'Телефон, ноутбук, планшет, ТВ-приставка или роутер подключаются к одной подписке.',
-    icon: Laptop,
-    tone: 'text-[var(--amber)] bg-[var(--amber-soft)]',
   },
   {
     title: 'Поддержка в Telegram',
@@ -161,12 +156,12 @@ const faqs = [
   {
     question: 'Когда я получу доступ?',
     answer:
-      'Обычно сразу после подтверждения оплаты. Сайт покажет личную ссылку подписки прямо в браузере.',
+      'Обычно сразу после оформления. Сайт покажет личную ссылку подписки прямо в браузере.',
   },
   {
     question: 'Что делать со ссылкой?',
     answer:
-      'Открой ее на нужном устройстве и следуй инструкции внутри личного кабинета.',
+      'Открой ее и следуй инструкции внутри личного кабинета.',
   },
   {
     question: 'Что если автоматическая выдача недоступна?',
@@ -182,7 +177,7 @@ function App() {
   const [theme, setTheme] = useState<Theme>(getInitialTheme)
   const [config, setConfig] = useState<SiteConfig>(defaultConfig)
   const [plans, setPlans] = useState<Plan[]>([])
-  const [selectedPlanId, setSelectedPlanId] = useState('trial')
+  const [selectedPlanId, setSelectedPlanId] = useState(TRIAL_PLAN_ID)
   const [telegram, setTelegram] = useState('')
   const [email, setEmail] = useState('')
   const [consent, setConsent] = useState(false)
@@ -196,6 +191,7 @@ function App() {
   useScrollReveal()
   useSectionFocus()
   useMagneticScroll()
+  const activeNavHref = useActiveNavHref()
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme
@@ -224,7 +220,8 @@ function App() {
           : fallbackPlans
       setPlans(loadedPlans)
 
-      const preferredPlan = loadedPlans.find((plan) => plan.popular) || loadedPlans[0]
+      const preferredPlan =
+        loadedPlans.find((plan) => plan.id === TRIAL_PLAN_ID) || loadedPlans[0]
       if (preferredPlan) {
         setSelectedPlanId(preferredPlan.id)
       }
@@ -252,6 +249,15 @@ function App() {
       return
     }
 
+    if (selectedPlan.id !== TRIAL_PLAN_ID) {
+      setSelectedPlanId(TRIAL_PLAN_ID)
+      setFormStatus({
+        kind: 'error',
+        message: 'Оплата платных тарифов пока не активна. Сейчас можно оформить только пробный период.',
+      })
+      return
+    }
+
     if (!telegram.trim() && !email.trim()) {
       setFormStatus({
         kind: 'error',
@@ -263,7 +269,7 @@ function App() {
     setSubmitting(true)
     setFormStatus({
       kind: 'idle',
-      message: 'Проверяем оплату и активируем доступ...',
+      message: 'Оформляем пробный доступ...',
     })
 
     try {
@@ -275,7 +281,7 @@ function App() {
       })
       setFormStatus({
         kind: 'success',
-        message: 'Готово: доступ активирован, ссылка получена.',
+        message: 'Готово: пробный доступ активирован, ссылка получена.',
       })
       setDialog({ type: 'success', checkout: result.checkout, payment: result.payment })
       setTelegram('')
@@ -301,12 +307,12 @@ function App() {
         brandName={config.brandName}
         supportUrl={config.supportTelegramUrl}
         theme={theme}
+        activeHref={activeNavHref}
         onToggleTheme={() => setTheme((value) => (value === 'dark' ? 'light' : 'dark'))}
       />
 
       <main>
         <Hero brandName={config.brandName} />
-        <ProcessSection />
         <FeatureSection />
         <ServicesSection />
         <PricingSection
@@ -337,6 +343,7 @@ function App() {
         brandName={config.brandName}
         supportUrl={config.supportTelegramUrl}
         supportEmail={config.supportEmail}
+        theme={theme}
       />
 
       <AccessModal
@@ -352,19 +359,22 @@ function SiteHeader({
   brandName,
   supportUrl,
   theme,
+  activeHref,
   onToggleTheme,
 }: {
   brandName: string
   supportUrl: string
   theme: Theme
+  activeHref: string
   onToggleTheme: () => void
 }) {
   const ThemeIcon = theme === 'dark' ? Sun : Moon
+  const logoSrc = theme === 'dark' ? logoDarkSrc : logoLightSrc
 
   return (
     <header className="sticky top-0 z-40 border-b border-[var(--line)] bg-[color-mix(in_srgb,var(--page-bg)_92%,transparent)] backdrop-blur-xl">
       <nav
-        className="mx-auto flex h-18 w-[min(1180px,calc(100vw-32px))] items-center justify-between gap-4"
+        className="mx-auto flex h-20 w-[min(1180px,calc(100vw-32px))] items-center justify-between gap-4"
         aria-label="Основная навигация"
       >
         <a href="#top" className="flex min-w-0 items-center gap-3 no-underline">
@@ -375,19 +385,23 @@ function SiteHeader({
             height="40"
             alt=""
           />
-          <span className="truncate text-base font-black">{brandName}</span>
+          <span className="truncate text-3xl font-black leading-none">{brandName}</span>
         </a>
 
-        <div className="hidden items-center gap-1 rounded-full border border-[var(--line)] bg-[var(--surface)] p-1 md:flex">
-          {navItems.map(([label, href]) => (
-            <a
-              className="rounded-full px-3 py-2 text-sm font-bold text-[var(--muted)] no-underline transition hover:bg-[var(--accent-soft)] hover:text-[var(--text)]"
-              href={href}
-              key={href}
-            >
-              {label}
-            </a>
-          ))}
+        <div className="hidden min-h-14 items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--surface)] p-2 md:flex">
+          {navItems.map(([label, href]) => {
+            const active = href === activeHref
+            return (
+              <a
+                className={clsx('nav-link rounded-full px-5 py-3 text-base font-extrabold no-underline transition', active && 'is-active')}
+                href={href}
+                key={href}
+                aria-current={active ? 'page' : undefined}
+              >
+                {label}
+              </a>
+            )
+          })}
         </div>
 
         <div className="flex items-center gap-2">
@@ -433,8 +447,8 @@ function Hero({ brandName }: { brandName: string }) {
             Цифровая подписка с быстрой активацией
           </h1>
           <p className="mt-6 max-w-2xl text-lg font-medium leading-8 text-[var(--muted)] sm:text-xl">
-            Выбери тариф, оплати онлайн и получи личную страницу с настройками
-            для телефона, ноутбука, планшета или роутера.
+            Оставь контакт и получи личную страницу с настройками пробного доступа.
+            Платные тарифы появятся после подключения оплаты.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <a
@@ -457,7 +471,7 @@ function Hero({ brandName }: { brandName: string }) {
             {[
               ['1 клик', 'оформление на сайте'],
               ['сразу', 'личная ссылка'],
-              ['до 10', 'устройств на тарифе'],
+              ['30 дней', 'пробный период'],
             ].map(([value, label]) => (
               <div
                 className="proof-item"
@@ -492,7 +506,7 @@ function Hero({ brandName }: { brandName: string }) {
             <div className="preview-grid">
               {[
                 ['30', 'дней'],
-                ['2', 'устройства'],
+                ['100', 'ГБ'],
                 ['24/7', 'помощь'],
                 ['1', 'ссылка'],
               ].map(([value, label]) => (
@@ -516,122 +530,16 @@ function Hero({ brandName }: { brandName: string }) {
   )
 }
 
-function ProcessSection() {
-  const steps = [
-    {
-      number: '1',
-      title: 'Выбираешь тариф',
-      text: 'Сначала клиент выбирает срок подписки, цену, объем данных и количество устройств.',
-      icon: CircleDollarSign,
-      tone: 'text-[var(--accent-strong)] bg-[var(--accent-soft)]',
-    },
-    {
-      number: '2',
-      title: 'Оставляешь контакт',
-      text: 'Достаточно Telegram или email. По нему можно найти оформление и восстановить доступ.',
-      icon: Mail,
-      tone: 'text-[var(--teal)] bg-[var(--teal-soft)]',
-    },
-    {
-      number: '3',
-      title: 'Оплата подтверждается',
-      text: 'После подтверждения сайт фиксирует заказ и запускает активацию профиля.',
-      icon: BadgeCheck,
-      tone: 'text-[var(--amber)] bg-[var(--amber-soft)]',
-    },
-    {
-      number: '4',
-      title: 'Ссылка появляется на сайте',
-      text: 'Личная страница подписки открывается в браузере сразу после готовности доступа.',
-      icon: Copy,
-      tone: 'text-[var(--rose)] bg-[var(--rose-soft)]',
-    },
-  ]
-
-  return (
-    <section id="process" className="process-section border-b border-[var(--line)]">
-      <div className="process-layout mx-auto grid min-h-[calc(100svh-72px)] w-[min(1180px,calc(100vw-32px))] content-center gap-10 py-16 lg:py-20">
-        <div className="process-copy">
-          <div data-reveal>
-            <p className="mb-3 text-sm font-extrabold uppercase text-[var(--accent-strong)]">
-              Как оформляется
-            </p>
-            <h2 className="mx-auto max-w-4xl text-4xl font-extrabold leading-tight sm:text-5xl">
-              От выбора тарифа до готовой ссылки без ручного ожидания
-            </h2>
-            <p className="mx-auto mt-5 max-w-2xl text-lg font-medium leading-8 text-[var(--muted)]">
-              Клиент проходит понятный путь на сайте: выбирает тариф, оставляет контакт,
-              подтверждает оплату и получает личную страницу прямо в браузере.
-            </p>
-          </div>
-
-          <div className="process-stats mx-auto mt-8 grid max-w-3xl gap-3 sm:grid-cols-3">
-            {[
-              ['1 форма', 'тариф, Telegram или email'],
-              ['4 шага', 'весь процесс прозрачен'],
-              ['сразу', 'ссылка после выдачи'],
-            ].map(([value, label], index) => (
-              <div
-                className="process-stat"
-                key={value}
-                data-reveal
-                data-reveal-delay={index}
-              >
-                <div>{value}</div>
-                <span>{label}</span>
-              </div>
-            ))}
-          </div>
-
-          <a
-            className="primary-action mt-8 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-[var(--accent)] px-5 text-sm font-black text-white no-underline transition hover:bg-[var(--accent-strong)]"
-            href="#pricing"
-            data-reveal
-            data-reveal-delay="2"
-          >
-            <span>Выбрать тариф</span>
-            <ArrowRight aria-hidden="true" className="size-4" />
-          </a>
-        </div>
-
-        <div className="flow-panel">
-          {steps.map((step, index) => (
-            <article
-              className="flow-step"
-              key={step.number}
-              data-reveal
-              data-reveal-delay={index}
-            >
-              <div className={clsx('flow-icon', step.tone)}>
-                <step.icon aria-hidden="true" className="size-5" />
-              </div>
-              <div>
-                <div className="text-xs font-extrabold uppercase text-[var(--muted)]">
-                  Шаг {step.number}
-                </div>
-                <h3 className="mt-1 text-lg font-extrabold">{step.title}</h3>
-                <p className="mt-2 text-sm font-medium leading-6 text-[var(--muted)]">
-                  {step.text}
-                </p>
-              </div>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
 function FeatureSection() {
   return (
-    <section id="features" className="feature-section border-b border-[var(--line)] py-16 sm:py-20">
+    <section id="features" className="feature-section border-b border-[var(--line)] py-20 sm:py-24">
       <div className="mx-auto w-[min(1180px,calc(100vw-32px))]">
         <SectionHeader
           eyebrow="Почему удобно"
           title="Покупка не уводит клиента в ручную обработку"
           text="Сайт держит весь путь оформления в одном месте: выбор тарифа, контакты, активация и личная ссылка."
         />
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div className="feature-grid">
           {features.map((feature, index) => (
             <article
               className="feature-card"
@@ -739,7 +647,7 @@ function PricingSection({
           <SectionHeader
             eyebrow="Тарифы"
             title="Выбери срок подписки"
-            text="Старшие тарифы дешевле в пересчете на месяц. Объем данных и устройства применяются автоматически."
+            text="Сейчас активен пробный период на 30 дней. Платные тарифы появятся после подключения оплаты."
             compact
           />
           <div className="pricing-note" data-reveal data-reveal-delay="1">
@@ -748,15 +656,21 @@ function PricingSection({
           </div>
         </div>
         <div className="plan-grid">
-          {visiblePlans.map((plan, index) => (
-            <PriceCard
-              key={plan.id}
-              plan={plan}
-              selected={plan.id === selectedPlanId}
-              onClick={() => onSelectPlan(plan.id)}
-              revealDelay={index}
-            />
-          ))}
+          {visiblePlans.map((plan, index) => {
+            const unavailable = plan.id !== TRIAL_PLAN_ID
+            return (
+              <PriceCard
+                key={plan.id}
+                plan={plan}
+                selected={plan.id === selectedPlanId}
+                unavailable={unavailable}
+                onClick={() => {
+                  if (!unavailable) onSelectPlan(plan.id)
+                }}
+                revealDelay={index}
+              />
+            )
+          })}
         </div>
       </div>
     </section>
@@ -766,11 +680,13 @@ function PricingSection({
 function PriceCard({
   plan,
   selected,
+  unavailable,
   onClick,
   revealDelay,
 }: {
   plan: Plan
   selected: boolean
+  unavailable: boolean
   onClick: () => void
   revealDelay: number
 }) {
@@ -779,11 +695,14 @@ function PriceCard({
       className={clsx(
         'plan-card',
         selected && 'is-selected',
+        unavailable && 'is-unavailable',
         plan.popular && 'is-popular',
       )}
       type="button"
       onClick={onClick}
+      disabled={unavailable}
       aria-pressed={selected}
+      aria-disabled={unavailable}
       data-reveal
       data-reveal-delay={revealDelay}
     >
@@ -798,6 +717,7 @@ function PriceCard({
           <Check aria-hidden="true" className="size-4" />
         </span>
       ) : null}
+      {unavailable ? <span className="plan-lock">Скоро</span> : null}
       <div className="plan-head">
         <div className="plan-title">
           <div>{plan.name}</div>
@@ -817,7 +737,6 @@ function PriceCard({
       </p>
       <div className="plan-meta">
         <MetaPill>{trafficLabel(plan)}</MetaPill>
-        <MetaPill>{plan.devices} устр.</MetaPill>
       </div>
     </button>
   )
@@ -863,22 +782,10 @@ function CheckoutSection({
           <div>
             <SectionHeader
               eyebrow="Оформление"
-              title="Оплати доступ и получи ссылку подписки"
-              text="Укажи Telegram или email, выбери тариф и заверши оформление. Ссылка появится на этой странице после подтверждения."
+              title="Получить пробный доступ"
+              text="Укажи Telegram или email. Ссылка появится на этой странице сразу после оформления пробного периода."
               compact
             />
-          </div>
-          <div className="checkout-mini-metrics" data-reveal data-reveal-delay="1">
-            {[
-              ['1', 'тариф выбран'],
-              ['2', 'контакт указан'],
-              ['3', 'ссылка готова'],
-            ].map(([number, label]) => (
-              <div className="checkout-mini-metric" key={number}>
-                <span>{number}</span>
-                {label}
-              </div>
-            ))}
           </div>
         </div>
 
@@ -902,10 +809,10 @@ function CheckoutSection({
                 <span />
               </div>
               <div className="receipt-top">
-                <span>Активный заказ</span>
+                <span>Пробный период</span>
                 <span>
                   <BadgeCheck aria-hidden="true" className="size-4" />
-                  готов к оплате
+                  готов к оформлению
                 </span>
               </div>
               <div className="receipt-plan">
@@ -918,8 +825,8 @@ function CheckoutSection({
               <div className="receipt-divider" />
               <div className="receipt-details">
                 <div>
-                  <span>Устройства</span>
-                  <strong>{selectedPlan ? selectedPlan.devices : '...'}</strong>
+                  <span>Трафик</span>
+                  <strong>{selectedPlan ? trafficLabel(selectedPlan) : '...'}</strong>
                 </div>
                 <div>
                   <span>Период</span>
@@ -928,7 +835,7 @@ function CheckoutSection({
               </div>
               <div className="receipt-status">
                 <Check aria-hidden="true" className="size-4" />
-                Тариф попадет в оформление автоматически
+                Пробный период оформится без оплаты
               </div>
             </aside>
 
@@ -936,7 +843,7 @@ function CheckoutSection({
               <div className="checkout-form-head">
                 <div>
                   <span>Форма заказа</span>
-                  <strong>Контакт и тариф</strong>
+                  <strong>Контакт для доступа</strong>
                 </div>
                 <ArrowRight aria-hidden="true" className="size-5" />
               </div>
@@ -946,7 +853,7 @@ function CheckoutSection({
                   <PlanSelect plans={visiblePlans} value={selectedPlanId} onChange={onSelectPlan} />
                 </div>
 
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="checkout-contact-grid grid gap-4 sm:grid-cols-2">
                   <label className="checkout-field grid gap-2 text-sm font-black">
                     Telegram
                     <input
@@ -989,7 +896,7 @@ function CheckoutSection({
                   type="submit"
                   disabled={submitting}
                 >
-                  <span>{submitting ? 'Оформляем доступ...' : 'Оплатить и получить ссылку'}</span>
+                  <span>{submitting ? 'Оформляем доступ...' : 'Получить пробный доступ'}</span>
                   <ArrowRight aria-hidden="true" className="size-4" />
                 </button>
 
@@ -1138,6 +1045,64 @@ function useSectionFocus() {
       window.removeEventListener('resize', scheduleFocusUpdate)
     }
   }, [])
+}
+
+function useActiveNavHref() {
+  const [activeHref, setActiveHref] = useState<string>(navItems[0][1])
+
+  useEffect(() => {
+    let animationFrame = 0
+
+    function getHeaderHeight() {
+      return document.querySelector('header')?.getBoundingClientRect().height || 72
+    }
+
+    function updateActiveHref() {
+      animationFrame = 0
+      const headerHeight = getHeaderHeight()
+      let nextHref: string = navItems[0][1]
+      let maxVisibleArea = 0
+
+      for (const [, href] of navItems) {
+        const section = document.getElementById(href.slice(1))
+        if (!section) continue
+
+        const rect = section.getBoundingClientRect()
+        const visibleTop = Math.max(rect.top, headerHeight)
+        const visibleBottom = Math.min(rect.bottom, window.innerHeight)
+        const visibleArea = Math.max(0, visibleBottom - visibleTop)
+
+        if (visibleArea > maxVisibleArea) {
+          maxVisibleArea = visibleArea
+          nextHref = href
+        }
+      }
+
+      setActiveHref((currentHref) => (currentHref === nextHref ? currentHref : nextHref))
+    }
+
+    function scheduleActiveUpdate() {
+      if (animationFrame) return
+      animationFrame = window.requestAnimationFrame(updateActiveHref)
+    }
+
+    updateActiveHref()
+
+    window.addEventListener('scroll', scheduleActiveUpdate, { passive: true })
+    window.addEventListener('resize', scheduleActiveUpdate)
+    window.addEventListener('hashchange', scheduleActiveUpdate)
+
+    return () => {
+      if (animationFrame) {
+        window.cancelAnimationFrame(animationFrame)
+      }
+      window.removeEventListener('scroll', scheduleActiveUpdate)
+      window.removeEventListener('resize', scheduleActiveUpdate)
+      window.removeEventListener('hashchange', scheduleActiveUpdate)
+    }
+  }, [])
+
+  return activeHref
 }
 
 function useMagneticScroll() {
@@ -1355,11 +1320,15 @@ function SiteFooter({
   brandName,
   supportUrl,
   supportEmail,
+  theme,
 }: {
   brandName: string
   supportUrl: string
   supportEmail: string
+  theme: Theme
 }) {
+  const logoSrc = theme === 'dark' ? logoDarkSrc : logoLightSrc
+
   return (
     <footer className="border-t border-[var(--line)] bg-[var(--surface)] py-10">
       <div className="mx-auto flex w-[min(1180px,calc(100vw-32px))] flex-col justify-between gap-6 md:flex-row md:items-start">
@@ -1414,6 +1383,7 @@ function PlanSelect({
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
   const selectedPlan = plans.find((plan) => plan.id === value) || plans[0]
+  const availablePlans = plans.filter((plan) => plan.id === TRIAL_PLAN_ID)
 
   useEffect(() => {
     if (!open) return
@@ -1445,18 +1415,20 @@ function PlanSelect({
     )
   }
 
-  function selectPlan(planId: string) {
-    onChange(planId)
+  function selectPlan(plan: Plan) {
+    if (plan.id !== TRIAL_PLAN_ID) return
+    onChange(plan.id)
     setOpen(false)
   }
 
   function moveSelection(direction: number) {
+    if (!availablePlans.length) return
     const currentIndex = Math.max(
       0,
-      plans.findIndex((plan) => plan.id === selectedPlan.id),
+      availablePlans.findIndex((plan) => plan.id === selectedPlan.id),
     )
-    const nextIndex = clamp(currentIndex + direction, 0, plans.length - 1)
-    const nextPlan = plans[nextIndex]
+    const nextIndex = clamp(currentIndex + direction, 0, availablePlans.length - 1)
+    const nextPlan = availablePlans[nextIndex]
     if (nextPlan) onChange(nextPlan.id)
   }
 
@@ -1489,7 +1461,7 @@ function PlanSelect({
         type="button"
         aria-haspopup="listbox"
         aria-expanded={open}
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => setOpen((current) => !current)}
       >
         <span className="flex min-w-0 items-center gap-3">
           <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-[var(--accent-soft)] text-[var(--accent-strong)]">
@@ -1500,7 +1472,7 @@ function PlanSelect({
               {selectedPlan.name} · {formatPrice(selectedPlan.priceRub)}
             </span>
             <span className="mt-1 block truncate text-xs font-bold text-[var(--muted)]">
-              {selectedPlan.period} · {trafficLabel(selectedPlan)} · {selectedPlan.devices} устр.
+              {selectedPlan.period} · {trafficLabel(selectedPlan)}
             </span>
           </span>
         </span>
@@ -1518,6 +1490,7 @@ function PlanSelect({
           <div className="grid max-h-80 gap-1 overflow-y-auto">
             {plans.map((plan) => {
               const selected = plan.id === selectedPlan.id
+              const unavailable = plan.id !== TRIAL_PLAN_ID
               return (
                 <button
                   className={clsx(
@@ -1530,32 +1503,20 @@ function PlanSelect({
                   key={plan.id}
                   role="option"
                   aria-selected={selected}
-                  onClick={() => selectPlan(plan.id)}
+                  aria-disabled={unavailable}
+                  disabled={unavailable}
+                  onClick={() => selectPlan(plan)}
                 >
                   <span className="min-w-0">
-                    <span className="flex flex-wrap items-center gap-2">
-                      <span className="font-black">{plan.name}</span>
-                      {plan.popular ? (
-                        <span
-                          className={clsx(
-                            'rounded-full px-2 py-0.5 text-[11px] font-black',
-                            selected
-                              ? 'bg-[var(--surface)] text-[var(--accent-strong)]'
-                              : 'bg-[var(--accent-soft)] text-[var(--accent-strong)]',
-                          )}
-                        >
-                          Популярный
-                        </span>
-                      ) : null}
-                    </span>
-                    <span
-                      className="mt-1 block text-xs font-bold text-[var(--muted)]"
-                    >
-                      {plan.period} · {trafficLabel(plan)} · {plan.devices} устр.
+                    <span className="font-black">{plan.name}</span>
+                    <span className="mt-1 block text-xs font-bold text-[var(--muted)]">
+                      {plan.period} · {trafficLabel(plan)}
                     </span>
                   </span>
                   <span className="flex shrink-0 items-center gap-3">
-                    <span className="text-base font-black">{formatPrice(plan.priceRub)}</span>
+                    <span className="text-base font-black">
+                      {unavailable ? 'Скоро' : formatPrice(plan.priceRub)}
+                    </span>
                     {selected ? (
                       <span className="grid size-7 place-items-center rounded-full bg-[var(--surface)] text-[var(--accent-strong)]">
                         <Check aria-hidden="true" className="size-4" />

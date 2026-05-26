@@ -33,7 +33,7 @@ func Load() Config {
 	return Config{
 		Addr:                    getEnv("APP_ADDR", ":8080"),
 		PublicBaseURL:           strings.TrimRight(getEnv("PUBLIC_BASE_URL", "http://localhost:8080"), "/"),
-		BrandName:               getEnv("SITE_BRAND_NAME", "FlowPass"),
+		BrandName:               getEnv("SITE_BRAND_NAME", "Простор"),
 		SupportTelegramURL:      getEnv("SUPPORT_TELEGRAM_URL", "https://t.me/bezgraniz_support_bot"),
 		SupportEmail:            getEnv("SUPPORT_EMAIL", "support@example.com"),
 		DataDir:                 getEnv("DATA_DIR", "data"),

@@ -26,7 +26,7 @@ func TestCheckoutRequiresConfiguredRemnawave(t *testing.T) {
 		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
 	)
 
-	body := bytes.NewBufferString(`{"planId":"month","telegram":"@client","consent":true}`)
+	body := bytes.NewBufferString(`{"planId":"trial","telegram":"@client","consent":true}`)
 	req := httptest.NewRequest(http.MethodPost, "/api/checkout", body)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
@@ -110,7 +110,7 @@ func TestCheckoutProvisionsUserThroughRemnawave(t *testing.T) {
 		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
 	)
 
-	body := bytes.NewBufferString(`{"planId":"month","telegram":"@client","consent":true}`)
+	body := bytes.NewBufferString(`{"planId":"trial","telegram":"@client","consent":true}`)
 	req := httptest.NewRequest(http.MethodPost, "/api/checkout", body)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
@@ -152,7 +152,7 @@ func TestCheckoutRejectsLongContactFields(t *testing.T) {
 		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
 	)
 
-	body := bytes.NewBufferString(`{"planId":"month","telegram":"` + strings.Repeat("a", 65) + `","consent":true}`)
+	body := bytes.NewBufferString(`{"planId":"trial","telegram":"` + strings.Repeat("a", 65) + `","consent":true}`)
 	req := httptest.NewRequest(http.MethodPost, "/api/checkout", body)
 	req.Header.Set("Content-Type", "application/json")
 	rec := httptest.NewRecorder()
@@ -161,6 +161,40 @@ func TestCheckoutRejectsLongContactFields(t *testing.T) {
 
 	if rec.Code != http.StatusBadRequest {
 		t.Fatalf("status = %d, want %d; body = %s", rec.Code, http.StatusBadRequest, rec.Body.String())
+	}
+}
+
+func TestCheckoutRejectsPaidPlansWhilePaymentsAreDisabled(t *testing.T) {
+	store, err := checkout.NewStore(t.TempDir())
+	if err != nil {
+		t.Fatalf("NewStore() error = %v", err)
+	}
+	server := NewServer(
+		config.Config{CheckoutEnabled: true, BrandName: "TestBrand"},
+		checkout.NewService(store, remnawave.New(remnawave.Config{}), checkout.ServiceConfig{}),
+		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
+	)
+
+	body := bytes.NewBufferString(`{"planId":"month","telegram":"@client","consent":true}`)
+	req := httptest.NewRequest(http.MethodPost, "/api/checkout", body)
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+
+	server.Routes().ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusBadRequest {
+		t.Fatalf("status = %d, want %d; body = %s", rec.Code, http.StatusBadRequest, rec.Body.String())
+	}
+	var payload struct {
+		Error struct {
+			Code string `json:"code"`
+		} `json:"error"`
+	}
+	if err := json.NewDecoder(rec.Body).Decode(&payload); err != nil {
+		t.Fatalf("decode response: %v", err)
+	}
+	if payload.Error.Code != "paid_plans_disabled" {
+		t.Fatalf("error code = %q", payload.Error.Code)
 	}
 }
 
