@@ -388,7 +388,7 @@ function SiteHeader({
           <span className="truncate text-3xl font-black leading-none">{brandName}</span>
         </a>
 
-        <div className="hidden min-h-14 items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--surface)] p-2 md:flex">
+        <div className="hidden min-h-14 items-center gap-1.5 rounded-full border border-[var(--line)] bg-[var(--surface)] p-2 lg:flex">
           {navItems.map(([label, href]) => {
             const active = href === activeHref
             return (
@@ -421,7 +421,7 @@ function SiteHeader({
             rel="noreferrer"
           >
             <Headphones aria-hidden="true" className="size-4" />
-            <span className="hidden sm:inline">Поддержка</span>
+            <span className="hidden lg:inline">Поддержка</span>
           </a>
         </div>
       </nav>
@@ -994,7 +994,9 @@ function useScrollReveal() {
 function useSectionFocus() {
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const desktopViewport = window.matchMedia('(min-width: 900px) and (pointer: fine)')
+    const desktopViewport = window.matchMedia(
+      '(min-width: 1200px) and (min-height: 760px) and (pointer: fine)',
+    )
     const sections = Array.from(document.querySelectorAll<HTMLElement>('main > section'))
     let animationFrame = 0
 
@@ -1108,7 +1110,9 @@ function useActiveNavHref() {
 function useMagneticScroll() {
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const desktopViewport = window.matchMedia('(min-width: 900px) and (pointer: fine)')
+    const desktopViewport = window.matchMedia(
+      '(min-width: 1200px) and (min-height: 760px) and (pointer: fine)',
+    )
     if (prefersReducedMotion.matches || !desktopViewport.matches) return
 
     const scrollKeys = new Set(['ArrowDown', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End', ' '])
