@@ -1,16 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="256" height="256">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="256" height="256" role="img" aria-label="Nimbus">
   <defs>
-    <clipPath id="squircle-green">
-      <rect width="100" height="100" rx="24"/>
-    </clipPath>
+    <linearGradient id="nimbus-bg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1d1d1f"/>
+      <stop offset="1" stop-color="#3a3a3d"/>
+    </linearGradient>
   </defs>
-  <g clip-path="url(#squircle-green)">
-    <rect width="100" height="100" fill="#D4EACE"/>
-    
-    <path d="M-5 42 C 30 28, 65 38, 105 62 L 105 105 L -5 105 Z" fill="#36A265"/>
-    
-    <path d="M-5 42 C 30 28, 65 38, 105 62" fill="none" stroke="#FFFFFF" stroke-width="8"/>
-    
-    <path d="M-5 58 C 30 42, 65 55, 105 92" fill="none" stroke="#FFFFFF" stroke-width="8"/>
+  <rect width="100" height="100" rx="24" ry="24" fill="url(#nimbus-bg)"/>
+  <g stroke="#ffffff" fill="none" stroke-linecap="round">
+    <circle cx="50" cy="50" r="26" stroke-width="3"/>
+    <circle cx="50" cy="50" r="14" stroke-width="3" stroke-dasharray="44 100" transform="rotate(-30 50 50)"/>
   </g>
+  <circle cx="50" cy="50" r="5" fill="#ffffff"/>
 </svg>
