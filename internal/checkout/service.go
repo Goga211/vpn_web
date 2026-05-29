@@ -25,6 +25,8 @@ type RemnawaveClient interface {
 	Enabled() bool
 	CreateUser(ctx context.Context, req remnawave.CreateUserRequest) (remnawave.User, error)
 	GetSubscriptionByUsername(ctx context.Context, username string) (remnawave.Subscription, error)
+	GetUsersByTelegramID(ctx context.Context, telegramID int64) ([]remnawave.User, error)
+	UpdateUser(ctx context.Context, req remnawave.UpdateUserRequest) (remnawave.User, error)
 }
 
 type Service struct {
@@ -70,6 +72,14 @@ func (s *Service) Provision(ctx context.Context, checkout Checkout) (Checkout, e
 		return checkout, ErrUnknownPlan
 	}
 
+	// Если оформление пришло из Telegram Mini App (есть проверенный Telegram ID),
+	// продлеваем существующего пользователя вместо создания дубля.
+	if checkout.TelegramID != 0 {
+		if existing, ok := s.findRenewableUser(ctx, checkout.TelegramID); ok {
+			return s.renew(ctx, checkout, plan, existing)
+		}
+	}
+
 	username := remnawave.SuggestedUsername(firstNonEmpty(checkout.Telegram, checkout.Email, checkout.Contact, checkout.ID))
 	email := strings.TrimSpace(checkout.Email)
 	var emailPtr *string
@@ -87,6 +97,7 @@ func (s *Service) Provision(ctx context.Context, checkout Checkout) (Checkout, e
 		Description:          fmt.Sprintf("Website checkout %s, plan %s", checkout.ID, checkout.PlanID),
 		Tag:                  s.cfg.RemnawaveTag,
 		Email:                emailPtr,
+		TelegramID:           checkout.TelegramID,
 		HWIDDeviceLimit:      plan.Devices,
 		ActiveInternalSquads: s.cfg.ActiveInternalSquads,
 	})
@@ -120,6 +131,81 @@ func (s *Service) Provision(ctx context.Context, checkout Checkout) (Checkout, e
 		return checkout
 	})
 	return updated, err
+}
+
+// findRenewableUser ищет существующего пользователя панели по Telegram ID.
+// Ошибки поиска не блокируют оформление — в этом случае создаём нового пользователя.
+func (s *Service) findRenewableUser(ctx context.Context, telegramID int64) (remnawave.User, bool) {
+	users, err := s.remna.GetUsersByTelegramID(ctx, telegramID)
+	if err != nil || len(users) == 0 {
+		return remnawave.User{}, false
+	}
+	// Предпочитаем активного пользователя; иначе берём первого с валидным UUID.
+	var fallback remnawave.User
+	for _, user := range users {
+		if user.UUID == "" {
+			continue
+		}
+		if strings.EqualFold(user.Status, "ACTIVE") {
+			return user, true
+		}
+		if fallback.UUID == "" {
+			fallback = user
+		}
+	}
+	return fallback, fallback.UUID != ""
+}
+
+// renew продлевает доступ существующего пользователя через PATCH вместо создания дубля.
+func (s *Service) renew(ctx context.Context, checkout Checkout, plan Plan, existing remnawave.User) (Checkout, error) {
+	expires := extendExpiry(existing.ExpireAt, plan.Duration())
+	user, err := s.remna.UpdateUser(ctx, remnawave.UpdateUserRequest{
+		UUID:     existing.UUID,
+		Status:   "ACTIVE",
+		ExpireAt: expires,
+	})
+	if err != nil {
+		updated, updateErr := s.markFailed(checkout.ID, sanitizeError(err))
+		return updated, errors.Join(err, updateErr)
+	}
+
+	username := firstNonEmpty(user.Username, existing.Username)
+	subscriptionURL := firstNonEmpty(user.SubscriptionURL, existing.SubscriptionURL)
+	if subscriptionURL == "" && username != "" {
+		subscription, subErr := s.remna.GetSubscriptionByUsername(ctx, username)
+		if subErr == nil {
+			subscriptionURL = subscription.SubscriptionURL
+		}
+	}
+	if !isHTTPURL(subscriptionURL) {
+		updated, _, updateErr := s.store.Update(checkout.ID, func(checkout Checkout) Checkout {
+			checkout.Status = StatusFailed
+			checkout.Username = username
+			checkout.ProvisionError = "Не удалось получить ссылку подписки. Напишите в поддержку, и мы поможем подключиться."
+			return checkout
+		})
+		return updated, errors.Join(ErrSubscriptionURLMissing, updateErr)
+	}
+
+	updated, _, err := s.store.Update(checkout.ID, func(checkout Checkout) Checkout {
+		checkout.Status = StatusProvisioned
+		checkout.Username = username
+		checkout.SubscriptionURL = subscriptionURL
+		checkout.ProvisionError = ""
+		return checkout
+	})
+	return updated, err
+}
+
+// extendExpiry возвращает новый срок: max(текущий expireAt, сейчас) + длительность плана.
+func extendExpiry(currentExpire string, dur time.Duration) string {
+	base := time.Now().UTC()
+	if currentExpire != "" {
+		if parsed, err := time.Parse(time.RFC3339, currentExpire); err == nil && parsed.After(base) {
+			base = parsed.UTC()
+		}
+	}
+	return base.Add(dur).Format(time.RFC3339Nano)
 }
 
 func isHTTPURL(rawURL string) bool {

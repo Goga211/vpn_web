@@ -11,6 +11,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -42,8 +43,17 @@ type CreateUserRequest struct {
 	Description          string   `json:"description,omitempty"`
 	Tag                  string   `json:"tag,omitempty"`
 	Email                *string  `json:"email,omitempty"`
+	TelegramID           int64    `json:"telegramId,omitempty"`
 	HWIDDeviceLimit      int      `json:"hwidDeviceLimit,omitempty"`
 	ActiveInternalSquads []string `json:"activeInternalSquads,omitempty"`
+}
+
+// UpdateUserRequest используется для продления доступа существующего
+// пользователя через PATCH /api/users (минимальный набор полей).
+type UpdateUserRequest struct {
+	UUID     string `json:"uuid"`
+	Status   string `json:"status,omitempty"`
+	ExpireAt string `json:"expireAt,omitempty"`
 }
 
 type User struct {
@@ -52,6 +62,7 @@ type User struct {
 	Username        string `json:"username"`
 	Status          string `json:"status"`
 	ExpireAt        string `json:"expireAt"`
+	TelegramID      int64  `json:"telegramId"`
 	SubscriptionURL string `json:"subscriptionUrl"`
 }
 
@@ -107,6 +118,30 @@ func (c *Client) GetSubscriptionByUsername(ctx context.Context, username string)
 	path := "/api/subscriptions/by-username/" + url.PathEscape(username)
 	if err := c.do(ctx, http.MethodGet, path, nil, &envelope); err != nil {
 		return Subscription{}, err
+	}
+	return envelope.Response, nil
+}
+
+// GetUsersByTelegramID возвращает пользователей панели, привязанных к данному
+// Telegram ID. Используется, чтобы продлевать доступ вместо создания дублей.
+func (c *Client) GetUsersByTelegramID(ctx context.Context, telegramID int64) ([]User, error) {
+	var envelope struct {
+		Response []User `json:"response"`
+	}
+	path := "/api/users/by-telegram-id/" + url.PathEscape(strconv.FormatInt(telegramID, 10))
+	if err := c.do(ctx, http.MethodGet, path, nil, &envelope); err != nil {
+		return nil, err
+	}
+	return envelope.Response, nil
+}
+
+// UpdateUser продлевает/обновляет существующего пользователя через PATCH /api/users.
+func (c *Client) UpdateUser(ctx context.Context, req UpdateUserRequest) (User, error) {
+	var envelope struct {
+		Response User `json:"response"`
+	}
+	if err := c.do(ctx, http.MethodPatch, "/api/users", req, &envelope); err != nil {
+		return User{}, err
 	}
 	return envelope.Response, nil
 }

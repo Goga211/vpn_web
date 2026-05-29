@@ -115,13 +115,97 @@ func TestServiceRejectsUnsafeSubscriptionURL(t *testing.T) {
 	}
 }
 
+func TestServiceRenewsExistingTelegramUser(t *testing.T) {
+	store, err := NewStore(t.TempDir())
+	if err != nil {
+		t.Fatalf("NewStore() error = %v", err)
+	}
+	currentExpire := time.Now().UTC().Add(48 * time.Hour)
+	client := &fakeRemnawaveClient{
+		enabled: true,
+		existingUsers: []remnawave.User{
+			{
+				UUID:     "uuid-1",
+				Username: "existing",
+				Status:   "ACTIVE",
+				ExpireAt: currentExpire.Format(time.RFC3339Nano),
+			},
+		},
+	}
+	service := NewService(store, client, ServiceConfig{RemnawaveTag: "WEB"})
+
+	got, err := service.Start(context.Background(), CreateInput{
+		PlanID:     "month",
+		TelegramID: 555,
+	})
+	if err != nil {
+		t.Fatalf("Start() error = %v", err)
+	}
+	if got.Status != StatusProvisioned {
+		t.Fatalf("status = %q, want %q", got.Status, StatusProvisioned)
+	}
+	if client.createCalls != 0 {
+		t.Fatalf("create calls = %d, want 0 (should renew, not create)", client.createCalls)
+	}
+	if client.updateCalls != 1 {
+		t.Fatalf("update calls = %d, want 1", client.updateCalls)
+	}
+	if client.updateRequest.UUID != "uuid-1" {
+		t.Fatalf("update uuid = %q, want uuid-1", client.updateRequest.UUID)
+	}
+	newExpire, parseErr := time.Parse(time.RFC3339Nano, client.updateRequest.ExpireAt)
+	if parseErr != nil {
+		t.Fatalf("update expireAt = %q, parse error = %v", client.updateRequest.ExpireAt, parseErr)
+	}
+	// Продление считается от текущего expireAt, поэтому новый срок строго больше.
+	if !newExpire.After(currentExpire) {
+		t.Fatalf("new expire = %v, want after %v", newExpire, currentExpire)
+	}
+	if got.SubscriptionURL != "https://subs.example/existing" {
+		t.Fatalf("subscription URL = %q", got.SubscriptionURL)
+	}
+}
+
+func TestServicePassesTelegramIDWhenCreatingNewUser(t *testing.T) {
+	store, err := NewStore(t.TempDir())
+	if err != nil {
+		t.Fatalf("NewStore() error = %v", err)
+	}
+	client := &fakeRemnawaveClient{enabled: true}
+	service := NewService(store, client, ServiceConfig{RemnawaveTag: "WEB"})
+
+	got, err := service.Start(context.Background(), CreateInput{
+		PlanID:     "month",
+		TelegramID: 777,
+	})
+	if err != nil {
+		t.Fatalf("Start() error = %v", err)
+	}
+	if got.Status != StatusProvisioned {
+		t.Fatalf("status = %q, want %q", got.Status, StatusProvisioned)
+	}
+	if client.byTelegramCalls != 1 {
+		t.Fatalf("by-telegram lookups = %d, want 1", client.byTelegramCalls)
+	}
+	if client.createCalls != 1 {
+		t.Fatalf("create calls = %d, want 1", client.createCalls)
+	}
+	if client.createRequest.TelegramID != 777 {
+		t.Fatalf("create telegramId = %d, want 777", client.createRequest.TelegramID)
+	}
+}
+
 type fakeRemnawaveClient struct {
 	enabled              bool
 	createCalls          int
 	subscriptionCalls    int
+	updateCalls          int
+	byTelegramCalls      int
 	createRequest        remnawave.CreateUserRequest
+	updateRequest        remnawave.UpdateUserRequest
 	subscriptionUsername string
 	subscriptionURL      string
+	existingUsers        []remnawave.User
 }
 
 func (f *fakeRemnawaveClient) Enabled() bool {
@@ -141,4 +225,20 @@ func (f *fakeRemnawaveClient) GetSubscriptionByUsername(_ context.Context, usern
 		return remnawave.Subscription{SubscriptionURL: f.subscriptionURL}, nil
 	}
 	return remnawave.Subscription{SubscriptionURL: "https://subs.example/" + username}, nil
+}
+
+func (f *fakeRemnawaveClient) GetUsersByTelegramID(_ context.Context, _ int64) ([]remnawave.User, error) {
+	f.byTelegramCalls++
+	return f.existingUsers, nil
+}
+
+func (f *fakeRemnawaveClient) UpdateUser(_ context.Context, req remnawave.UpdateUserRequest) (remnawave.User, error) {
+	f.updateCalls++
+	f.updateRequest = req
+	return remnawave.User{
+		UUID:            req.UUID,
+		Username:        "existing",
+		ExpireAt:        req.ExpireAt,
+		SubscriptionURL: "https://subs.example/existing",
+	}, nil
 }

@@ -40,6 +40,7 @@ export type CheckoutPayload = {
   telegram: string
   email: string
   consent: boolean
+  initData?: string
 }
 
 export type CheckoutResult = {

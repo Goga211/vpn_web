@@ -14,7 +14,11 @@ import (
 
 	"access_web/internal/checkout"
 	"access_web/internal/config"
+	"access_web/internal/telegram"
 )
+
+// initDataMaxAge ограничивает возраст подписанной строки Telegram initData (защита от replay).
+const initDataMaxAge = 24 * time.Hour
 
 type Server struct {
 	cfg             config.Config
@@ -69,6 +73,7 @@ type checkoutRequest struct {
 	Email    string `json:"email"`
 	Telegram string `json:"telegram"`
 	Consent  bool   `json:"consent"`
+	InitData string `json:"initData"`
 }
 
 const (
@@ -129,7 +134,20 @@ func (s *Server) handleCheckout(w http.ResponseWriter, r *http.Request) {
 		}
 		req.Email = addr.Address
 	}
-	if req.Email == "" && req.Telegram == "" {
+	// Telegram ID берётся только из проверенного initData, никогда из тела запроса
+	// напрямую. initData опционален: при оплате из браузера он пустой, и заявка
+	// оформляется как обычно, без привязки к Telegram.
+	var telegramID int64
+	if req.InitData != "" {
+		id, err := telegram.ValidateInitData(req.InitData, s.cfg.TelegramBotToken, initDataMaxAge)
+		if err != nil {
+			writeError(w, http.StatusBadRequest, "bad_init_data", "Откройте оплату через бота в Telegram.")
+			return
+		}
+		telegramID = id
+	}
+
+	if telegramID == 0 && req.Email == "" && req.Telegram == "" {
 		writeError(w, http.StatusBadRequest, "contact_required", "Оставь Telegram или email для профиля и восстановления доступа.")
 		return
 	}
@@ -138,10 +156,11 @@ func (s *Server) handleCheckout(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	result, err := s.checkout.Start(provisionCtx, checkout.CreateInput{
-		PlanID:   req.PlanID,
-		Contact:  firstNonEmpty(req.Telegram, req.Email, req.Contact),
-		Email:    req.Email,
-		Telegram: req.Telegram,
+		PlanID:     req.PlanID,
+		Contact:    firstNonEmpty(req.Telegram, req.Email, req.Contact),
+		Email:      req.Email,
+		Telegram:   req.Telegram,
+		TelegramID: telegramID,
 	})
 	if err != nil {
 		s.writeCheckoutError(w, result, err)

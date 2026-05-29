@@ -28,6 +28,20 @@ type AccessDialog =
   | { type: 'success'; checkout: Checkout; payment?: Payment }
   | { type: 'failure'; checkout?: Checkout; message: string }
 
+type TelegramWebApp = {
+  initData?: string
+  ready?: () => void
+  expand?: () => void
+}
+
+// Telegram кладёт WebApp в window, когда страница открыта как Mini App из бота.
+// Вне Telegram объект отсутствует, и initData остаётся пустым (браузерный путь).
+function getTelegramWebApp(): TelegramWebApp | undefined {
+  if (typeof window === 'undefined') return undefined
+  return (window as unknown as { Telegram?: { WebApp?: TelegramWebApp } }).Telegram
+    ?.WebApp
+}
+
 const defaultConfig: SiteConfig = {
   brandName: 'Простор',
   supportTelegramUrl: 'https://t.me/bezgraniz_support_bot',
@@ -199,6 +213,12 @@ function App() {
   }, [theme])
 
   useEffect(() => {
+    const tg = getTelegramWebApp()
+    tg?.ready?.()
+    tg?.expand?.()
+  }, [])
+
+  useEffect(() => {
     let ignore = false
 
     async function loadInitialData() {
@@ -258,7 +278,8 @@ function App() {
       return
     }
 
-    if (!telegram.trim() && !email.trim()) {
+    const hasTelegramInitData = Boolean(getTelegramWebApp()?.initData)
+    if (!hasTelegramInitData && !telegram.trim() && !email.trim()) {
       setFormStatus({
         kind: 'error',
         message: 'Оставь Telegram или email для профиля и восстановления доступа.',
@@ -278,6 +299,7 @@ function App() {
         telegram: telegram.trim(),
         email: email.trim(),
         consent,
+        initData: getTelegramWebApp()?.initData ?? '',
       })
       setFormStatus({
         kind: 'success',
