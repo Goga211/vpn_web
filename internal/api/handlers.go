@@ -42,7 +42,7 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("GET /api/config", s.handleConfig)
 	mux.HandleFunc("GET /api/plans", s.handlePlans)
 	mux.HandleFunc("POST /api/checkout", s.handleCheckout)
-	return withSecurityHeaders(mux)
+	return withDevCORS(mux)
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -234,15 +234,11 @@ func writeError(w http.ResponseWriter, status int, code, message string) {
 	})
 }
 
-func withSecurityHeaders(next http.Handler) http.Handler {
+// withDevCORS добавляет CORS для локальных dev-источников (Vite/Live Server).
+// Security-заголовки задаются один раз на верхнем уровне в main.go — и для статики,
+// и для API, поэтому здесь не дублируются (иначе копии расходятся при правках CSP).
+func withDevCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
-		w.Header().Set("Cross-Origin-Opener-Policy", "same-origin")
-		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
-		w.Header().Set("X-Frame-Options", "DENY")
-		w.Header().Set("X-Content-Type-Options", "nosniff")
-		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
-		w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
 		if allowLocalDevCORS(w, r) && r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
 			return

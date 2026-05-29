@@ -1,6 +1,7 @@
 import { ArrowRight, Check, ChevronDown, Crown, Rocket, Sparkles, Zap } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import type { Plan } from '../types'
 import { useSite } from '../siteContext'
 import {
   TRIAL_PLAN_ID,
@@ -148,11 +149,11 @@ export function PricingPage() {
               ))}
             </div>
             {[
-              { label: 'Период', val: (p: any) => p.period },
-              { label: 'Цена', val: (p: any) => formatPrice(p.priceRub) },
-              { label: 'Трафик', val: (p: any) => trafficLabel(p) },
-              { label: 'Качество канала', val: (p: any) => qualityLabel(p) },
-              { label: 'Скорость', val: (p: any) => speedLabel(p) },
+              { label: 'Период', val: (p: Plan) => p.period },
+              { label: 'Цена', val: (p: Plan) => formatPrice(p.priceRub) },
+              { label: 'Трафик', val: (p: Plan) => trafficLabel(p) },
+              { label: 'Качество канала', val: (p: Plan) => qualityLabel(p) },
+              { label: 'Скорость', val: (p: Plan) => speedLabel(p) },
             ].map((row) => (
               <div
                 className="pricing-table-row"

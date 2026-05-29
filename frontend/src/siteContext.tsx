@@ -73,6 +73,9 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   return <SiteContext.Provider value={value}>{children}</SiteContext.Provider>
 }
 
+// Хук колоцирован с провайдером намеренно. Правило касается только Fast Refresh
+// (HMR) в dev-режиме и не влияет на прод-сборку.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useSite(): SiteContextValue {
   const value = useContext(SiteContext)
   if (!value) throw new Error('useSite must be used inside SiteProvider')

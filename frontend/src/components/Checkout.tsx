@@ -61,9 +61,14 @@ export function CheckoutSection({ initialPlanId }: { initialPlanId?: string }) {
   const [formStatus, setFormStatus] = useState<FormStatus>({ kind: 'idle', message: '' })
   const [dialog, setDialog] = useState<AccessDialog | null>(null)
 
-  useEffect(() => {
-    if (initialPlanId) setSelectedPlanId(initialPlanId)
-  }, [initialPlanId])
+  // Синхронизируем выбранный тариф с тарифом из URL при навигации, не теряя данные
+  // формы. Корректировка состояния во время рендера — рекомендованный React способ,
+  // он не вызывает каскадных ререндеров (в отличие от setState внутри useEffect).
+  const [lastInitialPlanId, setLastInitialPlanId] = useState(initialPlanId)
+  if (initialPlanId && initialPlanId !== lastInitialPlanId) {
+    setLastInitialPlanId(initialPlanId)
+    setSelectedPlanId(initialPlanId)
+  }
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[0]
   const configNotice = getConfigNotice(config)

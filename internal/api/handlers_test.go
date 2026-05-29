@@ -198,27 +198,49 @@ func TestCheckoutRejectsPaidPlansWhilePaymentsAreDisabled(t *testing.T) {
 	}
 }
 
-func TestSecurityHeadersAreSet(t *testing.T) {
+func newTestServer(t *testing.T) *Server {
+	t.Helper()
 	store, err := checkout.NewStore(t.TempDir())
 	if err != nil {
 		t.Fatalf("NewStore() error = %v", err)
 	}
-	server := NewServer(
+	return NewServer(
 		config.Config{CheckoutEnabled: true, BrandName: "TestBrand"},
 		checkout.NewService(store, remnawave.New(remnawave.Config{}), checkout.ServiceConfig{}),
 		slog.New(slog.NewTextHandler(bytes.NewBuffer(nil), nil)),
 	)
+}
 
-	req := httptest.NewRequest(http.MethodGet, "/api/config", nil)
+func TestDevCORSAllowsLocalOriginPreflight(t *testing.T) {
+	server := newTestServer(t)
+
+	req := httptest.NewRequest(http.MethodOptions, "/api/checkout", nil)
+	req.Host = "localhost:8080"
+	req.Header.Set("Origin", "http://localhost:5173")
 	rec := httptest.NewRecorder()
 
 	server.Routes().ServeHTTP(rec, req)
 
-	if got := rec.Header().Get("Content-Security-Policy"); got == "" {
-		t.Fatal("Content-Security-Policy header is empty")
+	if rec.Code != http.StatusNoContent {
+		t.Fatalf("preflight status = %d, want %d", rec.Code, http.StatusNoContent)
 	}
-	if got := rec.Header().Get("X-Frame-Options"); got != "DENY" {
-		t.Fatalf("X-Frame-Options = %q, want DENY", got)
+	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != "http://localhost:5173" {
+		t.Fatalf("Access-Control-Allow-Origin = %q", got)
+	}
+}
+
+func TestDevCORSRejectsNonLocalOrigin(t *testing.T) {
+	server := newTestServer(t)
+
+	req := httptest.NewRequest(http.MethodOptions, "/api/checkout", nil)
+	req.Host = "example.com"
+	req.Header.Set("Origin", "https://evil.example")
+	rec := httptest.NewRecorder()
+
+	server.Routes().ServeHTTP(rec, req)
+
+	if got := rec.Header().Get("Access-Control-Allow-Origin"); got != "" {
+		t.Fatalf("Access-Control-Allow-Origin = %q, want empty for non-local origin", got)
 	}
 }
 
