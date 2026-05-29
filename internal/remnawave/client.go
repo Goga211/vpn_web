@@ -66,6 +66,17 @@ type User struct {
 	SubscriptionURL string `json:"subscriptionUrl"`
 }
 
+// InternalSquad описывает сквад панели. Поле Info.MembersCount используется
+// для балансировки новых пользователей по наименее загруженным сквадам.
+type InternalSquad struct {
+	UUID string `json:"uuid"`
+	Name string `json:"name"`
+	Info struct {
+		MembersCount  int `json:"membersCount"`
+		InboundsCount int `json:"inboundsCount"`
+	} `json:"info"`
+}
+
 type Subscription struct {
 	IsFound         bool     `json:"isFound"`
 	SubscriptionURL string   `json:"subscriptionUrl"`
@@ -120,6 +131,20 @@ func (c *Client) GetSubscriptionByUsername(ctx context.Context, username string)
 		return Subscription{}, err
 	}
 	return envelope.Response, nil
+}
+
+// GetInternalSquads возвращает список сквадов панели со счётчиком участников.
+func (c *Client) GetInternalSquads(ctx context.Context) ([]InternalSquad, error) {
+	var envelope struct {
+		Response struct {
+			Total          int             `json:"total"`
+			InternalSquads []InternalSquad `json:"internalSquads"`
+		} `json:"response"`
+	}
+	if err := c.do(ctx, http.MethodGet, "/api/internal-squads", nil, &envelope); err != nil {
+		return nil, err
+	}
+	return envelope.Response.InternalSquads, nil
 }
 
 // GetUsersByTelegramID возвращает пользователей панели, привязанных к данному

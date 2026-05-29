@@ -195,6 +195,77 @@ func TestServicePassesTelegramIDWhenCreatingNewUser(t *testing.T) {
 	}
 }
 
+func TestServiceBalancesNewUserIntoLeastLoadedSquad(t *testing.T) {
+	store, err := NewStore(t.TempDir())
+	if err != nil {
+		t.Fatalf("NewStore() error = %v", err)
+	}
+
+	makeSquad := func(uuid string, members int) remnawave.InternalSquad {
+		sq := remnawave.InternalSquad{UUID: uuid}
+		sq.Info.MembersCount = members
+		return sq
+	}
+
+	client := &fakeRemnawaveClient{
+		enabled: true,
+		squads: []remnawave.InternalSquad{
+			makeSquad("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", 50),
+			makeSquad("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", 12),
+			makeSquad("cccccccc-cccc-cccc-cccc-cccccccccccc", 37),
+		},
+	}
+	service := NewService(store, client, ServiceConfig{RemnawaveTag: "WEB"})
+
+	got, err := service.Start(context.Background(), CreateInput{PlanID: "month", Contact: "@client"})
+	if err != nil {
+		t.Fatalf("Start() error = %v", err)
+	}
+	if got.Status != StatusProvisioned {
+		t.Fatalf("status = %q, want %q", got.Status, StatusProvisioned)
+	}
+	if len(client.createRequest.ActiveInternalSquads) != 1 ||
+		client.createRequest.ActiveInternalSquads[0] != "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb" {
+		t.Fatalf("active internal squads = %#v, want least loaded squad", client.createRequest.ActiveInternalSquads)
+	}
+}
+
+func TestServiceSelectSquadsHonorsWhitelist(t *testing.T) {
+	store, err := NewStore(t.TempDir())
+	if err != nil {
+		t.Fatalf("NewStore() error = %v", err)
+	}
+
+	makeSquad := func(uuid string, members int) remnawave.InternalSquad {
+		sq := remnawave.InternalSquad{UUID: uuid}
+		sq.Info.MembersCount = members
+		return sq
+	}
+
+	client := &fakeRemnawaveClient{
+		enabled: true,
+		squads: []remnawave.InternalSquad{
+			makeSquad("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa", 1), // не в whitelist
+			makeSquad("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb", 40),
+			makeSquad("cccccccc-cccc-cccc-cccc-cccccccccccc", 9),
+		},
+	}
+	service := NewService(store, client, ServiceConfig{
+		ActiveInternalSquads: []string{
+			"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+			"cccccccc-cccc-cccc-cccc-cccccccccccc",
+		},
+	})
+
+	if _, err := service.Start(context.Background(), CreateInput{PlanID: "month", Contact: "@client"}); err != nil {
+		t.Fatalf("Start() error = %v", err)
+	}
+	if len(client.createRequest.ActiveInternalSquads) != 1 ||
+		client.createRequest.ActiveInternalSquads[0] != "cccccccc-cccc-cccc-cccc-cccccccccccc" {
+		t.Fatalf("active internal squads = %#v, want least loaded within whitelist", client.createRequest.ActiveInternalSquads)
+	}
+}
+
 type fakeRemnawaveClient struct {
 	enabled              bool
 	createCalls          int
@@ -206,6 +277,8 @@ type fakeRemnawaveClient struct {
 	subscriptionUsername string
 	subscriptionURL      string
 	existingUsers        []remnawave.User
+	squads               []remnawave.InternalSquad
+	squadsErr            error
 }
 
 func (f *fakeRemnawaveClient) Enabled() bool {
@@ -216,6 +289,10 @@ func (f *fakeRemnawaveClient) CreateUser(_ context.Context, req remnawave.Create
 	f.createCalls++
 	f.createRequest = req
 	return remnawave.User{Username: req.Username}, nil
+}
+
+func (f *fakeRemnawaveClient) GetInternalSquads(_ context.Context) ([]remnawave.InternalSquad, error) {
+	return f.squads, f.squadsErr
 }
 
 func (f *fakeRemnawaveClient) GetSubscriptionByUsername(_ context.Context, username string) (remnawave.Subscription, error) {

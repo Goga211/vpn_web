@@ -24,6 +24,7 @@ type ServiceConfig struct {
 type RemnawaveClient interface {
 	Enabled() bool
 	CreateUser(ctx context.Context, req remnawave.CreateUserRequest) (remnawave.User, error)
+	GetInternalSquads(ctx context.Context) ([]remnawave.InternalSquad, error)
 	GetSubscriptionByUsername(ctx context.Context, username string) (remnawave.Subscription, error)
 	GetUsersByTelegramID(ctx context.Context, telegramID int64) ([]remnawave.User, error)
 	UpdateUser(ctx context.Context, req remnawave.UpdateUserRequest) (remnawave.User, error)
@@ -99,7 +100,7 @@ func (s *Service) Provision(ctx context.Context, checkout Checkout) (Checkout, e
 		Email:                emailPtr,
 		TelegramID:           checkout.TelegramID,
 		HWIDDeviceLimit:      plan.Devices,
-		ActiveInternalSquads: s.cfg.ActiveInternalSquads,
+		ActiveInternalSquads: s.selectSquads(ctx),
 	})
 	if err != nil {
 		updated, updateErr := s.markFailed(checkout.ID, sanitizeError(err))
@@ -131,6 +132,43 @@ func (s *Service) Provision(ctx context.Context, checkout Checkout) (Checkout, e
 		return checkout
 	})
 	return updated, err
+}
+
+// selectSquads выбирает сквад для нового пользователя, балансируя нагрузку:
+// возвращает UUID наименее заполненного сквада (по info.membersCount).
+// Если в конфиге задан whitelist (cfg.ActiveInternalSquads), балансировка идёт
+// только среди этих сквадов; иначе — среди всех сквадов панели.
+// При ошибке запроса или отсутствии подходящих сквадов откатываемся к списку
+// из конфига, чтобы поведение оставалось предсказуемым.
+func (s *Service) selectSquads(ctx context.Context) []string {
+	squads, err := s.remna.GetInternalSquads(ctx)
+	if err != nil || len(squads) == 0 {
+		return s.cfg.ActiveInternalSquads
+	}
+
+	allowed := s.cfg.ActiveInternalSquads
+	best := -1
+	for i := range squads {
+		if len(allowed) > 0 && !containsString(allowed, squads[i].UUID) {
+			continue
+		}
+		if best < 0 || squads[i].Info.MembersCount < squads[best].Info.MembersCount {
+			best = i
+		}
+	}
+	if best < 0 {
+		return s.cfg.ActiveInternalSquads
+	}
+	return []string{squads[best].UUID}
+}
+
+func containsString(values []string, target string) bool {
+	for _, value := range values {
+		if value == target {
+			return true
+		}
+	}
+	return false
 }
 
 // findRenewableUser ищет существующего пользователя панели по Telegram ID.
