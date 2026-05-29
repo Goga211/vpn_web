@@ -6,17 +6,27 @@ import {
   HomeFaq,
   HowItWorks,
   OverviewGrid,
+  Scenarios,
 } from '../components/Sections'
+import { PricingSection } from '../components/Pricing'
 
 export function HomePage() {
   return (
     <>
       <Hero />
-      <OverviewGrid />
+      <div id="features">
+        <OverviewGrid />
+      </div>
       <HowItWorks />
+      <Scenarios />
       <Highlights />
+      <div id="pricing">
+        <PricingSection />
+      </div>
       <BrandStrip />
-      <HomeFaq />
+      <div id="faq">
+        <HomeFaq />
+      </div>
       <CtaBlock />
     </>
   )

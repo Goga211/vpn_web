@@ -1,4 +1,18 @@
-import { ArrowRight, BadgeCheck, ChevronDown, Gauge, Globe, MousePointerClick, ShieldCheck, Sparkles, Zap } from 'lucide-react'
+import {
+  ArrowRight,
+  BadgeCheck,
+  ChevronDown,
+  Gauge,
+  Globe,
+  MessagesSquare,
+  Plane,
+  ShieldCheck,
+  Sparkles,
+  SquarePen,
+  Tv2,
+  Zap,
+} from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useSite } from '../siteContext'
 
@@ -23,7 +37,7 @@ export function Hero() {
               Получить доступ
               <ArrowRight size={16} aria-hidden="true" />
             </Link>
-            <Link to="/features" className="btn btn-ghost btn-lg">
+            <Link to="/#features" className="btn btn-ghost btn-lg">
               Что внутри
             </Link>
           </div>
@@ -96,23 +110,14 @@ export function HowItWorks() {
         </div>
         <div className="steps-grid">
           <article className="step-card" data-step="01" data-reveal data-reveal-delay="1">
-            <div className="step-icon">
-              <MousePointerClick size={22} aria-hidden="true" />
-            </div>
             <h3>Выбор тарифа</h3>
             <p>Откройте раздел «Тарифы» и выберите подходящий срок подписки.</p>
           </article>
           <article className="step-card" data-step="02" data-reveal data-reveal-delay="2">
-            <div className="step-icon">
-              <Sparkles size={22} aria-hidden="true" />
-            </div>
             <h3>Оформление</h3>
             <p>Оставьте Telegram или email — мы создадим личную страницу подписки.</p>
           </article>
           <article className="step-card" data-step="03" data-reveal data-reveal-delay="3">
-            <div className="step-icon">
-              <Zap size={22} aria-hidden="true" />
-            </div>
             <h3>Готово</h3>
             <p>Ссылка появляется сразу же — можно подключаться и пользоваться.</p>
           </article>
@@ -189,7 +194,7 @@ export function CtaBlock({
   text = 'Активируйте пробный период за минуту — без оплаты и обязательств.',
   primaryLabel = 'Получить доступ',
   secondaryLabel = 'Посмотреть тарифы',
-  secondaryTo = '/pricing',
+  secondaryTo = '/#pricing',
 }: {
   title?: string
   text?: string
@@ -223,21 +228,21 @@ const overviewItems = [
     icon: Zap,
     title: 'Моментальная активация',
     text: 'Личная страница подписки появляется на сайте сразу после оформления.',
-    to: '/features',
+    to: '/checkout',
     tone: 'tone-violet',
   },
   {
     icon: ShieldCheck,
     title: 'Прозрачные лимиты',
     text: 'Срок и объём данных берутся из тарифа автоматически — без скрытых правил.',
-    to: '/pricing',
+    to: '/#pricing',
     tone: 'tone-aurora',
   },
   {
     icon: Globe,
     title: 'Для всех задач',
     text: 'Работа, общение, видео, путешествия — один доступ закрывает все сценарии.',
-    to: '/features',
+    to: '/checkout',
     tone: 'tone-ocean',
   },
 ]
@@ -279,6 +284,63 @@ export function OverviewGrid() {
   )
 }
 
+const scenarios: Array<{ tag: string; title: string; text: string; icon: LucideIcon }> = [
+  {
+    tag: 'Медиа',
+    title: 'Видео и стриминг',
+    text: 'Стабильный доступ к видео, прямым трансляциям и обучающим платформам в любое время.',
+    icon: Tv2,
+  },
+  {
+    tag: 'Общение',
+    title: 'Соцсети и мессенджеры',
+    text: 'Привычные сервисы на телефоне и десктопе работают без лишних настроек.',
+    icon: MessagesSquare,
+  },
+  {
+    tag: 'Работа',
+    title: 'Рабочие инструменты',
+    text: 'Почта, AI-сервисы, облака, таск-трекеры и ежедневные кабинеты — на месте.',
+    icon: SquarePen,
+  },
+  {
+    tag: 'Путешествия',
+    title: 'В дороге',
+    text: 'Подписки, личные кабинеты и привычные сайты — там же, где и дома.',
+    icon: Plane,
+  },
+]
+
+export function Scenarios() {
+  return (
+    <section className="section section-divider feature-section">
+      <div className="container-shell">
+        <div data-reveal>
+          <p className="eyebrow">Сценарии</p>
+          <h2 className="section-title">Закрывает повседневные задачи</h2>
+          <p className="section-subtitle">
+            Видео, общение, работа и поездки — везде работает одинаково надёжно.
+          </p>
+        </div>
+        <div className="services-grid">
+          {scenarios.map((s, index) => (
+            <article className="service-card" key={s.title} data-reveal data-reveal-delay={Math.min(index + 1, 4)}>
+              <div className="service-art" aria-hidden="true">
+                <s.icon />
+              </div>
+              <span className="service-tag">{s.tag}</span>
+              <div style={{ marginTop: 'auto' }}>
+                <h3>{s.title}</h3>
+                <p>{s.text}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
 const homeFaqs = [
   {
     question: 'Что нужно для подключения?',
@@ -291,6 +353,14 @@ const homeFaqs = [
   {
     question: 'Какая скорость и качество канала?',
     answer: 'На пробном — стабильный стандартный канал, на платных — приоритет и расширенные узлы. Качество указано в карточке каждого тарифа.',
+  },
+  {
+    question: 'Когда заработают платные тарифы?',
+    answer: 'Оплата подключается отдельно. Пока активен только пробный план — следите за обновлениями или подпишитесь на канал в Telegram.',
+  },
+  {
+    question: 'Можно ли сменить тариф после оформления?',
+    answer: 'Да, обратитесь в поддержку — мы пересчитаем оставшийся период и предложим переход на нужный план.',
   },
 ]
 

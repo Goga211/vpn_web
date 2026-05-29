@@ -5,11 +5,10 @@ import { useSite } from '../siteContext'
 const logoLightSrc = `${import.meta.env.BASE_URL}assets/logo-light.svg`
 const logoDarkSrc = `${import.meta.env.BASE_URL}assets/logo-dark.svg`
 
-const navItems = [
-  { label: 'Главная', to: '/' },
-  { label: 'Возможности', to: '/features' },
-  { label: 'Тарифы', to: '/pricing' },
-  { label: 'Оформить', to: '/checkout' },
+const sectionLinks = [
+  { label: 'Возможности', hash: '#features' },
+  { label: 'Тарифы', hash: '#pricing' },
+  { label: 'FAQ', hash: '#faq' },
 ]
 
 export function SiteHeader() {
@@ -26,16 +25,17 @@ export function SiteHeader() {
         </Link>
 
         <nav className="nav-primary" aria-label="Основная навигация">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.to === '/'}
-              className={({ isActive }) => 'nav-link' + (isActive ? ' is-active' : '')}
-            >
+          {sectionLinks.map((item) => (
+            <Link key={item.hash} to={{ pathname: '/', hash: item.hash }} className="nav-link">
               {item.label}
-            </NavLink>
+            </Link>
           ))}
+          <NavLink
+            to="/checkout"
+            className={({ isActive }) => 'nav-link' + (isActive ? ' is-active' : '')}
+          >
+            Оформить
+          </NavLink>
         </nav>
 
         <div className="header-actions">
@@ -75,8 +75,8 @@ export function SiteFooter() {
         </div>
         <div className="footer-col">
           <h4>Сервис</h4>
-          <Link to="/features">Возможности</Link>
-          <Link to="/pricing">Тарифы</Link>
+          <Link to={{ pathname: '/', hash: '#features' }}>Возможности</Link>
+          <Link to={{ pathname: '/', hash: '#pricing' }}>Тарифы</Link>
           <Link to="/checkout">Оформить</Link>
         </div>
         <div className="footer-col">
