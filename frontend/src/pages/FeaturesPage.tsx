@@ -12,7 +12,7 @@ import {
   MessagesSquare,
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { BrandStrip, CtaBlock, HowItWorks } from '../components/Sections'
+import { BrandStrip, CtaBlock, HowItWorks, Platforms } from '../components/Sections'
 
 const featureRows: Array<{
   eyebrow: string
@@ -206,6 +206,7 @@ export function FeaturesPage() {
         </div>
       </section>
 
+      <Platforms />
       <HowItWorks />
       <BrandStrip />
       <CtaBlock title="Готовы попробовать?" />

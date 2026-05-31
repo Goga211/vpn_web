@@ -6,6 +6,9 @@ import {
   HomeFaq,
   HowItWorks,
   OverviewGrid,
+  Platforms,
+  PricingTeaser,
+  Testimonials,
 } from '../components/Sections'
 
 export function HomePage() {
@@ -15,6 +18,9 @@ export function HomePage() {
       <OverviewGrid />
       <HowItWorks />
       <Highlights />
+      <Testimonials />
+      <PricingTeaser />
+      <Platforms />
       <BrandStrip />
       <HomeFaq />
       <CtaBlock />

@@ -2,63 +2,83 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Overview
+## Project
 
-Public-facing VPN subscription storefront. A Go binary serves a React/Vite landing page and a small JSON API; the checkout flow provisions access automatically through the **Remnawave** panel API. The Go module is named `access_web` (the repo directory is `vpn_web`).
+Public-facing storefront for a paid "цифровая подписка" service. A Go binary serves the React/Vite landing page from `web/` (embedded via `embed.FS`) and a small JSON API. On successful checkout the backend provisions a user in a Remnawave panel and returns the subscription URL straight to the browser.
 
-## Commands
+The repository root that matters is [vpn_web/](.) — `main.go` lives here, `frontend/` is the React source, `web/` is the build output served by Go, `internal/` holds the Go packages. A `frontend/go.mod` file sits next to `package.json` but is unused; the Go module is rooted at `vpn_web/go.mod` (module name `access_web`).
+
+## Common commands
+
+All commands run from `vpn_web/`.
 
 ```bash
-# First-time setup
-cp .env.example .env
+# Backend
+go run .                       # serve API + embedded web/ on $APP_ADDR (default :8080)
+go test ./...                  # run all Go tests
+go test ./internal/checkout    # one package
+go test ./internal/api -run TestCheckout   # one test
+go vet ./...
+
+# Frontend (one-time)
 npm --prefix frontend install
 
-# Build the frontend bundle into web/ (required before `go run .` picks up UI changes)
-npm --prefix frontend run build
-
-# Run the full app (Go serves the embedded web/ bundle and the API on :8080)
-go run .
-
-# Frontend dev server with HMR (proxies /api -> http://localhost:8080, so run `go run .` too)
-npm --prefix frontend run dev
-
-# Rebuild web/ on every change (for Live Server / Go-only preview)
-npm --prefix frontend run build:watch
-
-# Lint frontend
-npm --prefix frontend run lint
-
-# Go tests (all packages, or a single test)
-go test ./...
-go test ./internal/checkout -run TestServiceProvision
-
-# Frontend type-check + build is part of `npm run build` (`tsc -b && vite build`)
+# Frontend dev (proxies /api → :8080)
+npm --prefix frontend run dev          # Vite on :5173
+npm --prefix frontend run build        # tsc -b then vite build → emits to ../web/
+npm --prefix frontend run build:watch  # rebuild ../web/ on change (pairs with `go run .`)
+npm --prefix frontend run lint         # eslint
 ```
 
-There is no Makefile or task runner — use the raw `go` and `npm --prefix frontend` commands above.
+The Go binary `//go:embed web/*`, so a production-shaped run requires a fresh `npm run build` first; otherwise the embed contains stale output and there is no fallback to read from disk.
+
+## Configuration
+
+Loaded by [internal/config/config.go](internal/config/config.go) from `os.Environ()` first, then `.env` (process env wins). Notable behaviors:
+
+- `REMNAWAVE_BASE_URL` is normalized and silently dropped if it points at `example.com` / `*.example.com` (treated as placeholder). `RemnawaveEnabled()` is false unless a non-placeholder base URL plus either `REMNAWAVE_TOKEN` or both `REMNAWAVE_USERNAME` + `REMNAWAVE_PASSWORD` are set.
+- `CHECKOUT_ENABLED` also falls back to the legacy `PAYMENT_STUB_ENABLED` / `PAYMENT_STUB_PUBLIC_MOCK_ENABLED` keys.
+- `REMNAWAVE_USER_TAG` is upper-cased, truncated to 16 chars of `[A-Z0-9_]`, and defaults to `WEB`.
+- `REMNAWAVE_INTERNAL_SQUADS` is a comma-separated list of squad UUIDs assigned to every provisioned user.
 
 ## Architecture
 
-**Build/serve coupling:** `main.go` embeds the `web/` directory via `//go:embed web/*`. The frontend (`frontend/`) builds *into* `web/` (`vite.config.ts` sets `outDir: '../web'`). So `web/` is generated output that ships inside the binary — edit `frontend/`, then rebuild. `staticHandler` serves files and falls back to `/` (index.html) for unknown paths (SPA routing).
+### Request flow
 
-**Request pipeline (`main.go`):** `logRequests` → `securityHeaders` → mux. The mux splits `/api/` (handled by `internal/api`) from everything else (static handler). Security headers (CSP, HSTS, X-Frame-Options, etc.) are applied in both `main.go` and `internal/api` (the API layer re-applies them plus dev CORS).
+1. `main.go` builds the dependency graph: `config.Load()` → `checkout.NewStore(DataDir)` → `remnawave.New(...)` → `checkout.NewService(store, remna, cfg)` → `api.NewServer(cfg, service, logger)`.
+2. The root mux dispatches `/api/*` to [internal/api](internal/api) and everything else to the embedded `web/` filesystem.
+3. Static handler ([main.go:62](main.go#L62)) rewrites unknown paths to `/` so client-side React Router URLs (`/features`, `/pricing`, `/checkout`) resolve to `index.html`. `/` is served with `Cache-Control: no-cache`.
+4. Every response passes through `securityHeaders` in `main.go` (CSP, HSTS, COOP, frame-deny, etc.). The same set is applied a second time inside [internal/api/handlers.go](internal/api/handlers.go) `withSecurityHeaders` so API responses get the headers even if the outer middleware is bypassed in tests.
+5. Local dev CORS is permitted only for `Origin` = `localhost`/`127.0.0.1`/`::1` on ports `5173`, `4173`, `5500-5505` (see `allowLocalDevCORS`). Any other origin is silently dropped — there is no general CORS support.
 
-**API layer (`internal/api/handlers.go`):** Exposes exactly four routes — `GET /api/health`, `GET /api/config`, `GET /api/plans`, `POST /api/checkout`. `handleCheckout` validates input (consent required, email/telegram length + format, at least one contact), enforces a per-IP rate limit (`rate_limiter.go`, 20 req / 10 min), and currently **only allows the `trial` plan** — paid plans are rejected with `paid_plans_disabled`. `allowLocalDevCORS` permits CORS only for localhost origins on known Vite/Live-Server dev ports (5173, 4173, 5500–5505).
+### Checkout pipeline
 
-**Checkout flow (`internal/checkout/`):**
-- `plans.go` — hardcoded `Plans` slice; `trial` is the only provisionable plan (`TrialPlanID`).
-- `store.go` — JSON-file persistence in `DATA_DIR/checkouts.json` (default `data/`), with statuses `paid` → `provisioned` / `failed`. This is local history, not a real DB.
-- `service.go` — `Start` creates a checkout record then `Provision`s it: derives a username, calls Remnawave `CreateUser` with plan-derived traffic/expiry/device limits, then resolves the subscription URL (falling back to `GetSubscriptionByUsername`). Failures mark the checkout `failed` with a sanitized, user-safe message.
+The interesting code path is `POST /api/checkout` → [internal/api/handlers.go](internal/api/handlers.go) `handleCheckout` → `checkout.Service.Start` → `Service.Provision` → `remnawave.Client.CreateUser` (+ optional `GetSubscriptionByUsername` fallback) → `store.Update`.
 
-**Remnawave client (`internal/remnawave/client.go`):** Talks to the upstream panel. Auth is either a static `REMNAWAVE_TOKEN` or username/password (the client fetches and caches a token via `getToken`). `Enabled()` gates the whole provisioning path — if Remnawave isn't configured, checkout returns `remnawave_not_configured` and the record is marked failed.
+- Per-IP rate limit: 20 requests / 10 minutes via the in-memory `rateLimiter` ([internal/api/rate_limiter.go](internal/api/rate_limiter.go)).
+- Currently only the trial plan accepts paid-flow inputs; any non-`trial` plan returns `paid_plans_disabled` (handlers.go around `plan.ID != checkout.TrialPlanID`). Adjust this guard when wiring a real payment provider — see "For real payments" in [README.md](README.md).
+- Checkout records are persisted to `data/checkouts.json` via [internal/checkout/store.go](internal/checkout/store.go). The store creates `DataDir` with `0700` and writes the file with `0600`; never relax these or commit the file.
+- `Service.Provision` always *attempts* to update the stored checkout with a status (`provisioned` / `failed`) and a sanitized error message even when Remnawave fails — failures use `errors.Join` so both the original cause and the store update error are surfaced.
+- Plan catalog lives in [internal/checkout/plans.go](internal/checkout/plans.go) (`Plans` slice). `TrafficLimitGB = 0` means unlimited; `Devices` maps to Remnawave `hwidDeviceLimit`; `Duration()` is derived from the string `ProvisionDuration` so changes to durations stay JSON-serializable.
+- The public response from `newCheckoutResponse` deliberately omits `Telegram`, `Email`, `Contact`, and internal `ProvisionError`. Keep this surface narrow when extending the response shape.
 
-**Config (`internal/config/config.go`):** `Load()` reads `.env` itself (custom parser; real env vars take priority) and applies defaults. URLs pointing at `example.com` are treated as unset placeholders. `RemnawaveEnabled()` requires a base URL plus either a token or user/password.
+### Remnawave client
 
-## Important notes
+[internal/remnawave/client.go](internal/remnawave/client.go) is a thin REST client over `/api/users` and `/api/subscriptions/by-username/{username}`. `BaseURL` must be the panel origin only — no trailing `/api`, the client appends paths itself. Username generation is centralized in `remnawave.SuggestedUsername` so changing the slug strategy affects every callsite.
 
-- **`web/` is build output** — don't hand-edit it; change `frontend/` and rebuild.
-- The Go binary won't reflect frontend changes until `npm --prefix frontend run build` regenerates `web/`.
-- Paid plans are intentionally disabled at the API; only the trial provisions today.
-- `.env` and `data/` are gitignored; never commit them.
-- Telegram Mini App integration (per `SITE_INTEGRATION.md`) is **implemented**: the frontend loads `telegram-web-app.js` and sends `initData`; the backend verifies it in `internal/telegram` (signature + replay window) and writes `telegramId` to Remnawave. `initData` is **optional** — empty (browser) checkout still works without Telegram binding. Repeat checkouts for a known `telegramId` **renew** the existing Remnawave user (PATCH) instead of creating duplicates. Set `TELEGRAM_BOT_TOKEN` in `.env` (= the bot's token) for verification to work.
-- `frontend/` requires **Node 20.19+ / 22.12+** (Vite 8). On older Node the `tsc` type-check still runs but `vite build` fails — the embedded `web/` bundle can only be regenerated on a supported Node version.
+### Frontend
+
+React 19 + Vite 8 + Tailwind v4 (via `@tailwindcss/vite`), router is `react-router-dom` v7, no separate state library.
+
+- Entry: [src/main.tsx](frontend/src/main.tsx) → [src/App.tsx](frontend/src/App.tsx). Routes: `/`, `/features`, `/pricing`, `/checkout`, `*` → `HomePage`.
+- Site-wide state is one context: [src/siteContext.tsx](frontend/src/siteContext.tsx) holds `config`, `plans`, and `theme` (light/dark, persisted in `localStorage` under `site-theme`, default from `prefers-color-scheme`). On mount it fetches `/api/config` + `/api/plans` in parallel via `Promise.allSettled` and falls back to [src/siteData.ts](frontend/src/siteData.ts) values if the API is down — so the page renders even when the backend is unreachable.
+- Styling: Tailwind v4 with a large hand-tuned base in [src/index.css](frontend/src/index.css). There is no `tailwind.config.js` — design tokens live in CSS variables.
+- API client: [src/api.ts](frontend/src/api.ts). `apiURL()` detects VS Code Live Server (`localhost`/`127.0.0.1` on ports 5500–5505) and rewrites `/api/*` to `http://localhost:8080/api/*`; in any other context it returns the relative path, so Vite's proxy (or Go directly) handles it. Mirror this list with `isAllowedDevPort` in `handlers.go` whenever ports change.
+- Vite `base: './'` and `build.outDir: '../web'` are load-bearing: relative asset URLs let the embedded bundle work behind any reverse proxy path, and the build empties + writes directly into the location Go embeds.
+
+## Project conventions
+
+- **Brand language.** The site must not use the word "VPN" or anti-censorship terminology in user-facing copy, code comments visible in the bundle, or docs aimed at end users. Frame the product as "цифровая подписка". This applies to React strings, plan names, FAQ entries, marketing sections — anywhere a customer might read it. Backend log messages and internal Go identifiers are fine.
+- **User-facing strings are in Russian** (error messages from `handleCheckout`, plan names, frontend copy). Keep that consistent when adding flows.
+- **Public error shape.** Checkout errors return `{error: {code, message}}` with a stable `code` the frontend can branch on (`unknown_plan`, `paid_plans_disabled`, `consent_required`, `remnawave_not_configured`, `provision_failed`, …). Add new codes rather than reusing existing ones for different conditions.
+- **Tests.** Each `internal/*` package has a `_test.go` neighbour; the checkout service tests use a fake `RemnawaveClient` (via the interface in `service.go`). Prefer extending those over adding integration tests that hit a live panel.
