@@ -3,7 +3,7 @@ import type { Plan, SiteConfig } from './types'
 export const TRIAL_PLAN_ID = 'trial'
 
 export const defaultConfig: SiteConfig = {
-  brandName: 'Nimbus',
+  brandName: 'ПЛАТЕЖНЫЙ СЕРВЕР',
   supportTelegramUrl: 'https://t.me/bezgraniz_support_bot',
   supportEmail: 'support@example.com',
   paymentProvider: 'online',

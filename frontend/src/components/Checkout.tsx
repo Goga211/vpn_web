@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import {
+  AlertCircle,
   ArrowRight,
   AtSign,
   Check,
@@ -23,6 +24,9 @@ import {
 } from '../siteData'
 
 type FormStatus = { kind: 'idle' | 'success' | 'error'; message: string }
+type FieldErrors = { contact?: string; email?: string; consent?: string }
+
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 type AccessDialog =
   | { type: 'success'; checkout: Checkout; payment?: Payment }
   | { type: 'failure'; checkout?: Checkout; message: string }
@@ -58,7 +62,11 @@ export function CheckoutSection({ initialPlanId }: { initialPlanId?: string }) {
   const [consent, setConsent] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [formStatus, setFormStatus] = useState<FormStatus>({ kind: 'idle', message: '' })
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({})
   const [dialog, setDialog] = useState<AccessDialog | null>(null)
+  const telegramRef = useRef<HTMLInputElement>(null)
+  const emailRef = useRef<HTMLInputElement>(null)
+  const consentRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     if (initialPlanId) setSelectedPlanId(initialPlanId)
@@ -66,6 +74,20 @@ export function CheckoutSection({ initialPlanId }: { initialPlanId?: string }) {
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[0]
   const configNotice = getConfigNotice(config)
+
+  function validate(): FieldErrors {
+    const next: FieldErrors = {}
+    if (!telegram.trim() && !email.trim()) {
+      next.contact = 'Укажите Telegram или email — нужен для выдачи и восстановления доступа.'
+    }
+    if (email.trim() && !EMAIL_RE.test(email.trim())) {
+      next.email = 'Проверьте формат email, например name@example.com.'
+    }
+    if (!consent) {
+      next.consent = 'Подтвердите согласие, чтобы продолжить.'
+    }
+    return next
+  }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -84,11 +106,14 @@ export function CheckoutSection({ initialPlanId }: { initialPlanId?: string }) {
       return
     }
 
-    if (!telegram.trim() && !email.trim()) {
-      setFormStatus({
-        kind: 'error',
-        message: 'Оставьте Telegram или email для профиля и восстановления доступа.',
-      })
+    const errors = validate()
+    setFieldErrors(errors)
+    if (Object.keys(errors).length > 0) {
+      setFormStatus({ kind: 'error', message: 'Проверьте отмеченные поля.' })
+      // move focus to the first invalid field for keyboard / screen-reader users
+      if (errors.contact) telegramRef.current?.focus()
+      else if (errors.email) emailRef.current?.focus()
+      else if (errors.consent) consentRef.current?.focus()
       return
     }
 
@@ -107,6 +132,7 @@ export function CheckoutSection({ initialPlanId }: { initialPlanId?: string }) {
       setTelegram('')
       setEmail('')
       setConsent(false)
+      setFieldErrors({})
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Не удалось выпустить доступ'
       if (error instanceof CheckoutApiError && error.checkout) {
@@ -152,7 +178,7 @@ export function CheckoutSection({ initialPlanId }: { initialPlanId?: string }) {
                   <span>
                     {item.label}
                     {selectedPlan && item.render ? (
-                      <span style={{ color: 'rgba(245,245,247,0.6)' }}> · {item.render(selectedPlan)}</span>
+                      <span className="receipt-include-meta"> · {item.render(selectedPlan)}</span>
                     ) : null}
                   </span>
                 </div>
@@ -186,16 +212,21 @@ export function CheckoutSection({ initialPlanId }: { initialPlanId?: string }) {
 
                 <div style={{ display: 'grid', gap: 16, gridTemplateColumns: '1fr' }}>
                   <label>
-                    <span className="field-label">Telegram</span>
+                    <span className="field-label">Telegram или email <span className="req" aria-hidden="true">*</span></span>
                     <div className="field-with-icon">
                       <input
-                        className="field-input"
+                        ref={telegramRef}
+                        className={clsx('field-input', fieldErrors.contact && 'has-error')}
                         value={telegram}
-                        onChange={(e) => setTelegram(e.currentTarget.value)}
+                        onChange={(e) => {
+                          setTelegram(e.currentTarget.value)
+                          if (fieldErrors.contact) setFieldErrors((p) => ({ ...p, contact: undefined }))
+                        }}
                         type="text"
                         name="telegram"
                         placeholder="@username"
                         autoComplete="username"
+                        aria-invalid={Boolean(fieldErrors.contact)}
                       />
                       <MessageCircle aria-hidden="true" />
                     </div>
@@ -204,30 +235,68 @@ export function CheckoutSection({ initialPlanId }: { initialPlanId?: string }) {
                     <span className="field-label">Email</span>
                     <div className="field-with-icon">
                       <input
-                        className="field-input"
+                        ref={emailRef}
+                        className={clsx('field-input', (fieldErrors.email || fieldErrors.contact) && 'has-error')}
                         value={email}
-                        onChange={(e) => setEmail(e.currentTarget.value)}
+                        onChange={(e) => {
+                          setEmail(e.currentTarget.value)
+                          if (fieldErrors.email || fieldErrors.contact) {
+                            setFieldErrors((p) => ({ ...p, email: undefined, contact: undefined }))
+                          }
+                        }}
+                        onBlur={() => {
+                          if (email.trim() && !EMAIL_RE.test(email.trim())) {
+                            setFieldErrors((p) => ({ ...p, email: 'Проверьте формат email, например name@example.com.' }))
+                          }
+                        }}
                         type="email"
                         name="email"
+                        inputMode="email"
                         placeholder="name@example.com"
                         autoComplete="email"
+                        aria-invalid={Boolean(fieldErrors.email)}
                       />
                       <AtSign aria-hidden="true" />
                     </div>
                   </label>
+                  {fieldErrors.contact ? (
+                    <p className="field-error" role="alert">
+                      <AlertCircle aria-hidden="true" />
+                      {fieldErrors.contact}
+                    </p>
+                  ) : fieldErrors.email ? (
+                    <p className="field-error" role="alert">
+                      <AlertCircle aria-hidden="true" />
+                      {fieldErrors.email}
+                    </p>
+                  ) : (
+                    <p className="field-hint">Хватит одного контакта — туда придёт ссылка на доступ.</p>
+                  )}
                 </div>
 
-                <label className="consent">
-                  <input
-                    type="checkbox"
-                    checked={consent}
-                    onChange={(e) => setConsent(e.currentTarget.checked)}
-                    required
-                  />
-                  <span>
-                    Согласен на оформление доступа и обработку данных для выдачи подписки.
-                  </span>
-                </label>
+                <div>
+                  <label className={clsx('consent', fieldErrors.consent && 'has-error')}>
+                    <input
+                      ref={consentRef}
+                      type="checkbox"
+                      checked={consent}
+                      onChange={(e) => {
+                        setConsent(e.currentTarget.checked)
+                        if (fieldErrors.consent) setFieldErrors((p) => ({ ...p, consent: undefined }))
+                      }}
+                      aria-invalid={Boolean(fieldErrors.consent)}
+                    />
+                    <span>
+                      Согласен на оформление доступа и обработку данных для выдачи подписки.
+                    </span>
+                  </label>
+                  {fieldErrors.consent ? (
+                    <p className="field-error" role="alert">
+                      <AlertCircle aria-hidden="true" />
+                      {fieldErrors.consent}
+                    </p>
+                  ) : null}
+                </div>
 
                 <button
                   type="submit"
