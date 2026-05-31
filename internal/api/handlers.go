@@ -14,7 +14,11 @@ import (
 
 	"access_web/internal/checkout"
 	"access_web/internal/config"
+	"access_web/internal/telegram"
 )
+
+// initDataMaxAge ограничивает возраст подписанной строки Telegram initData (защита от replay).
+const initDataMaxAge = 24 * time.Hour
 
 type Server struct {
 	cfg             config.Config
@@ -38,7 +42,7 @@ func (s *Server) Routes() http.Handler {
 	mux.HandleFunc("GET /api/config", s.handleConfig)
 	mux.HandleFunc("GET /api/plans", s.handlePlans)
 	mux.HandleFunc("POST /api/checkout", s.handleCheckout)
-	return withSecurityHeaders(mux)
+	return withDevCORS(mux)
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
@@ -69,6 +73,7 @@ type checkoutRequest struct {
 	Email    string `json:"email"`
 	Telegram string `json:"telegram"`
 	Consent  bool   `json:"consent"`
+	InitData string `json:"initData"`
 }
 
 const (
@@ -129,7 +134,20 @@ func (s *Server) handleCheckout(w http.ResponseWriter, r *http.Request) {
 		}
 		req.Email = addr.Address
 	}
-	if req.Email == "" && req.Telegram == "" {
+	// Telegram ID берётся только из проверенного initData, никогда из тела запроса
+	// напрямую. initData опционален: при оплате из браузера он пустой, и заявка
+	// оформляется как обычно, без привязки к Telegram.
+	var telegramID int64
+	if req.InitData != "" {
+		id, err := telegram.ValidateInitData(req.InitData, s.cfg.TelegramBotToken, initDataMaxAge)
+		if err != nil {
+			writeError(w, http.StatusBadRequest, "bad_init_data", "Откройте оплату через бота в Telegram.")
+			return
+		}
+		telegramID = id
+	}
+
+	if telegramID == 0 && req.Email == "" && req.Telegram == "" {
 		writeError(w, http.StatusBadRequest, "contact_required", "Оставь Telegram или email для профиля и восстановления доступа.")
 		return
 	}
@@ -138,10 +156,11 @@ func (s *Server) handleCheckout(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	result, err := s.checkout.Start(provisionCtx, checkout.CreateInput{
-		PlanID:   req.PlanID,
-		Contact:  firstNonEmpty(req.Telegram, req.Email, req.Contact),
-		Email:    req.Email,
-		Telegram: req.Telegram,
+		PlanID:     req.PlanID,
+		Contact:    firstNonEmpty(req.Telegram, req.Email, req.Contact),
+		Email:      req.Email,
+		Telegram:   req.Telegram,
+		TelegramID: telegramID,
 	})
 	if err != nil {
 		s.writeCheckoutError(w, result, err)
@@ -215,15 +234,11 @@ func writeError(w http.ResponseWriter, status int, code, message string) {
 	})
 }
 
-func withSecurityHeaders(next http.Handler) http.Handler {
+// withDevCORS добавляет CORS для локальных dev-источников (Vite/Live Server).
+// Security-заголовки задаются один раз на верхнем уровне в main.go — и для статики,
+// и для API, поэтому здесь не дублируются (иначе копии расходятся при правках CSP).
+func withDevCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'")
-		w.Header().Set("Cross-Origin-Opener-Policy", "same-origin")
-		w.Header().Set("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
-		w.Header().Set("X-Frame-Options", "DENY")
-		w.Header().Set("X-Content-Type-Options", "nosniff")
-		w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")
-		w.Header().Set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
 		if allowLocalDevCORS(w, r) && r.Method == http.MethodOptions {
 			w.WriteHeader(http.StatusNoContent)
 			return

@@ -30,6 +30,7 @@ type Checkout struct {
 	Contact         string    `json:"contact"`
 	Email           string    `json:"email,omitempty"`
 	Telegram        string    `json:"telegram,omitempty"`
+	TelegramID      int64     `json:"telegramId,omitempty"`
 	Status          string    `json:"status"`
 	PaymentProvider string    `json:"paymentProvider"`
 	PaymentMessage  string    `json:"paymentMessage"`
@@ -41,10 +42,11 @@ type Checkout struct {
 }
 
 type CreateInput struct {
-	PlanID   string
-	Contact  string
-	Email    string
-	Telegram string
+	PlanID     string
+	Contact    string
+	Email      string
+	Telegram   string
+	TelegramID int64
 }
 
 type Store struct {
@@ -87,6 +89,7 @@ func (s *Store) Create(input CreateInput) (Checkout, error) {
 		Contact:         strings.TrimSpace(input.Contact),
 		Email:           strings.TrimSpace(input.Email),
 		Telegram:        strings.TrimSpace(input.Telegram),
+		TelegramID:      input.TelegramID,
 		Status:          StatusPaidStub,
 		PaymentProvider: "online",
 		PaymentMessage:  "Оплата подтверждена. Доступ активирован автоматически.",

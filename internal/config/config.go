@@ -24,6 +24,7 @@ type Config struct {
 	RemnawaveInternalSquads []string
 	RemnawaveRequestTimeout time.Duration
 	CheckoutEnabled         bool
+	TelegramBotToken        string
 }
 
 func Load() Config {
@@ -45,6 +46,7 @@ func Load() Config {
 		RemnawaveInternalSquads: getCSVEnv("REMNAWAVE_INTERNAL_SQUADS"),
 		RemnawaveRequestTimeout: getDurationEnv("REMNAWAVE_TIMEOUT", 12*time.Second),
 		CheckoutEnabled:         getBoolEnv("CHECKOUT_ENABLED", getBoolEnv("PAYMENT_STUB_ENABLED", getBoolEnv("PAYMENT_STUB_PUBLIC_MOCK_ENABLED", false))),
+		TelegramBotToken:        getEnv("TELEGRAM_BOT_TOKEN", ""),
 	}
 }
 

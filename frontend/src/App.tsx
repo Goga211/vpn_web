@@ -5,11 +5,12 @@ import { HomePage } from './pages/HomePage'
 import { PricingPage } from './pages/PricingPage'
 import { FeaturesPage } from './pages/FeaturesPage'
 import { CheckoutPage } from './pages/CheckoutPage'
-import { useHashScroll, useScrollReveal } from './hooks'
+import { useHashScroll, useScrollReveal, useTelegramInit } from './hooks'
 
 function AppShell() {
   useScrollReveal()
   useHashScroll()
+  useTelegramInit()
   return (
     <>
       <SiteHeader />

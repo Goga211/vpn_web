@@ -1,8 +1,0 @@
-time=2026-05-27T05:01:35.584+08:00 level=INFO msg="starting web app" addr=:8080 brand=Простор remnawave=true
-time=2026-05-27T05:02:14.994+08:00 level=INFO msg=request method=GET path=/ duration=31.193ms
-time=2026-05-27T05:02:15.007+08:00 level=INFO msg=request method=GET path=/assets/index-DU6dhxv_.css duration=622.9µs
-time=2026-05-27T05:02:15.007+08:00 level=INFO msg=request method=GET path=/assets/index-CyY_DMfE.js duration=0s
-time=2026-05-27T05:02:15.054+08:00 level=INFO msg=request method=GET path=/assets/logo-dark.svg duration=0s
-time=2026-05-27T05:02:15.093+08:00 level=INFO msg=request method=GET path=/api/config duration=0s
-time=2026-05-27T05:02:15.093+08:00 level=INFO msg=request method=GET path=/api/plans duration=0s
-time=2026-05-27T05:02:15.104+08:00 level=INFO msg=request method=GET path=/assets/logo.svg duration=510.6µs

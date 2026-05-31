@@ -15,6 +15,7 @@ import clsx from 'clsx'
 import { CheckoutApiError, createCheckout } from '../api'
 import type { Checkout, Payment, Plan } from '../types'
 import { useSite } from '../siteContext'
+import { getTelegramWebApp } from '../hooks'
 import {
   TRIAL_PLAN_ID,
   formatPrice,
@@ -68,9 +69,14 @@ export function CheckoutSection({ initialPlanId }: { initialPlanId?: string }) {
   const emailRef = useRef<HTMLInputElement>(null)
   const consentRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => {
-    if (initialPlanId) setSelectedPlanId(initialPlanId)
-  }, [initialPlanId])
+  // Синхронизируем выбранный тариф с тарифом из URL при навигации, не теряя данные
+  // формы. Корректировка состояния во время рендера — рекомендованный React способ,
+  // он не вызывает каскадных ререндеров (в отличие от setState внутри useEffect).
+  const [lastInitialPlanId, setLastInitialPlanId] = useState(initialPlanId)
+  if (initialPlanId && initialPlanId !== lastInitialPlanId) {
+    setLastInitialPlanId(initialPlanId)
+    setSelectedPlanId(initialPlanId)
+  }
 
   const selectedPlan = plans.find((p) => p.id === selectedPlanId) || plans[0]
   const configNotice = getConfigNotice(config)
@@ -126,6 +132,7 @@ export function CheckoutSection({ initialPlanId }: { initialPlanId?: string }) {
         telegram: telegram.trim(),
         email: email.trim(),
         consent,
+        initData: getTelegramWebApp()?.initData ?? '',
       })
       setFormStatus({ kind: 'success', message: 'Готово: пробный доступ активирован.' })
       setDialog({ type: 'success', checkout: result.checkout, payment: result.payment })
@@ -384,7 +391,7 @@ function PlanSelect({
 }: {
   plans: Plan[]
   value: string
-  onChange: (planId: string) => void
+  onChange: (planId: string) => voidand committing changes features
 }) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -396,7 +403,7 @@ function PlanSelect({
       if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
     }
     function onKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') setOpen(false)
+      if (event.key === 'Escape') setOpen(false)and committing changes features
     }
     document.addEventListener('pointerdown', onPointer)
     document.addEventListener('keydown', onKey)
