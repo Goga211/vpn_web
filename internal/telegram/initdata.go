@@ -13,19 +13,27 @@ import (
 	"time"
 )
 
-// ValidateInitData проверяет подпись Telegram WebApp initData и возвращает Telegram ID.
+// InitDataUser — проверенные данные Telegram-аккаунта из initData.
+// Username опционален: в Telegram он есть не у всех пользователей.
+type InitDataUser struct {
+	ID       int64
+	Username string
+}
+
+// ValidateInitData проверяет подпись Telegram WebApp initData и возвращает данные
+// пользователя (Telegram ID и, если задан, @username).
 // Алгоритм: https://core.telegram.org/bots/webapps#validating-data-received-via-the-mini-app
-func ValidateInitData(initData, botToken string, maxAge time.Duration) (int64, error) {
+func ValidateInitData(initData, botToken string, maxAge time.Duration) (InitDataUser, error) {
 	if initData == "" || botToken == "" {
-		return 0, errors.New("empty initData or bot token")
+		return InitDataUser{}, errors.New("empty initData or bot token")
 	}
 	values, err := url.ParseQuery(initData)
 	if err != nil {
-		return 0, err
+		return InitDataUser{}, err
 	}
 	hash := values.Get("hash")
 	if hash == "" {
-		return 0, errors.New("no hash in initData")
+		return InitDataUser{}, errors.New("no hash in initData")
 	}
 	values.Del("hash")
 
@@ -48,25 +56,26 @@ func ValidateInitData(initData, botToken string, maxAge time.Duration) (int64, e
 	// expected = HMAC_SHA256(key=secret, data=dataCheckString)
 	expected := hex.EncodeToString(hmacSHA256(secret, []byte(sb.String())))
 	if !hmac.Equal([]byte(expected), []byte(hash)) {
-		return 0, errors.New("bad initData signature")
+		return InitDataUser{}, errors.New("bad initData signature")
 	}
 
 	// Защита от повторного использования (replay).
 	if maxAge > 0 {
 		if authDate, err := strconv.ParseInt(values.Get("auth_date"), 10, 64); err == nil {
 			if time.Since(time.Unix(authDate, 0)) > maxAge {
-				return 0, errors.New("initData expired")
+				return InitDataUser{}, errors.New("initData expired")
 			}
 		}
 	}
 
 	var user struct {
-		ID int64 `json:"id"`
+		ID       int64  `json:"id"`
+		Username string `json:"username"`
 	}
 	if err := json.Unmarshal([]byte(values.Get("user")), &user); err != nil || user.ID == 0 {
-		return 0, errors.New("no user id in initData")
+		return InitDataUser{}, errors.New("no user id in initData")
 	}
-	return user.ID, nil
+	return InitDataUser{ID: user.ID, Username: user.Username}, nil
 }
 
 func hmacSHA256(key, data []byte) []byte {

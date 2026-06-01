@@ -98,13 +98,21 @@ func (s *Service) Provision(ctx context.Context, checkout Checkout) (Checkout, e
 		}
 	}
 
-	// Для Telegram-аккаунта имя детерминировано (tg_<id>) — без случайного
-	// суффикса; для оформления из браузера оставляем уникальный suggested-вариант.
+	// Имя пользователя панели: предпочитаем Telegram-@username (читаемое имя).
+	// Если @username не задан или непригоден — детерминированный tg_<id>; а для
+	// оформления из браузера оставляем уникальный suggested-вариант.
 	var username string
-	if checkout.TelegramID != 0 {
-		username = remnawave.TelegramUsername(checkout.TelegramID)
-	} else {
-		username = remnawave.SuggestedUsername(firstNonEmpty(checkout.Email, checkout.Contact, checkout.ID))
+	if checkout.TelegramUsername != "" {
+		if name, ok := remnawave.PanelUsernameFromHandle(checkout.TelegramUsername); ok {
+			username = name
+		}
+	}
+	if username == "" {
+		if checkout.TelegramID != 0 {
+			username = remnawave.TelegramUsername(checkout.TelegramID)
+		} else {
+			username = remnawave.SuggestedUsername(firstNonEmpty(checkout.Email, checkout.Contact, checkout.ID))
+		}
 	}
 	email := strings.TrimSpace(checkout.Email)
 	var emailPtr *string

@@ -301,6 +301,26 @@ func TelegramUsername(telegramID int64) string {
 	return fmt.Sprintf("tg_%d", telegramID)
 }
 
+// PanelUsernameFromHandle нормализует Telegram-@username в имя пользователя панели.
+// Telegram-хэндлы состоят из [A-Za-z0-9_] длиной 5–32; приводим к нижнему регистру
+// и отбрасываем всё лишнее. Возвращает (имя, true), только если результат пригоден
+// как имя пользователя панели — иначе вызывающий код берёт фолбэк (tg_<id>).
+func PanelUsernameFromHandle(handle string) (string, bool) {
+	clean := strings.ToLower(strings.TrimPrefix(strings.TrimSpace(handle), "@"))
+	var b strings.Builder
+	for _, r := range clean {
+		switch {
+		case r >= 'a' && r <= 'z', r >= '0' && r <= '9', r == '_':
+			b.WriteRune(r)
+		}
+	}
+	name := strings.Trim(b.String(), "_")
+	if len(name) < 3 || len(name) > 32 {
+		return "", false
+	}
+	return name, true
+}
+
 func SuggestedUsername(seed string) string {
 	clean := strings.ToLower(seed)
 	var b strings.Builder

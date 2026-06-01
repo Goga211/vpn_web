@@ -25,14 +25,17 @@ func signInitData(botToken string, authDate time.Time, userJSON string) string {
 
 func TestValidateInitDataHappyPath(t *testing.T) {
 	const token = "test-bot-token"
-	initData := signInitData(token, time.Now(), `{"id":12345,"first_name":"Test"}`)
+	initData := signInitData(token, time.Now(), `{"id":12345,"first_name":"Test","username":"johndoe"}`)
 
-	id, err := ValidateInitData(initData, token, 24*time.Hour)
+	user, err := ValidateInitData(initData, token, 24*time.Hour)
 	if err != nil {
 		t.Fatalf("ValidateInitData() error = %v", err)
 	}
-	if id != 12345 {
-		t.Fatalf("telegram id = %d, want 12345", id)
+	if user.ID != 12345 {
+		t.Fatalf("telegram id = %d, want 12345", user.ID)
+	}
+	if user.Username != "johndoe" {
+		t.Fatalf("telegram username = %q, want johndoe", user.Username)
 	}
 }
 

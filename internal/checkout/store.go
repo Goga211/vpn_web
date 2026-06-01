@@ -23,30 +23,32 @@ const (
 var ErrUnknownPlan = errors.New("unknown plan")
 
 type Checkout struct {
-	ID              string    `json:"id"`
-	PlanID          string    `json:"planId"`
-	PlanName        string    `json:"planName"`
-	PriceRUB        int       `json:"priceRub"`
-	Contact         string    `json:"contact"`
-	Email           string    `json:"email,omitempty"`
-	Telegram        string    `json:"telegram,omitempty"`
-	TelegramID      int64     `json:"telegramId,omitempty"`
-	Status          string    `json:"status"`
-	PaymentProvider string    `json:"paymentProvider"`
-	PaymentMessage  string    `json:"paymentMessage"`
-	Username        string    `json:"username,omitempty"`
-	SubscriptionURL string    `json:"subscriptionUrl,omitempty"`
-	ProvisionError  string    `json:"provisionError,omitempty"`
-	CreatedAt       time.Time `json:"createdAt"`
-	UpdatedAt       time.Time `json:"updatedAt"`
+	ID               string    `json:"id"`
+	PlanID           string    `json:"planId"`
+	PlanName         string    `json:"planName"`
+	PriceRUB         int       `json:"priceRub"`
+	Contact          string    `json:"contact"`
+	Email            string    `json:"email,omitempty"`
+	Telegram         string    `json:"telegram,omitempty"`
+	TelegramID       int64     `json:"telegramId,omitempty"`
+	TelegramUsername string    `json:"telegramUsername,omitempty"`
+	Status           string    `json:"status"`
+	PaymentProvider  string    `json:"paymentProvider"`
+	PaymentMessage   string    `json:"paymentMessage"`
+	Username         string    `json:"username,omitempty"`
+	SubscriptionURL  string    `json:"subscriptionUrl,omitempty"`
+	ProvisionError   string    `json:"provisionError,omitempty"`
+	CreatedAt        time.Time `json:"createdAt"`
+	UpdatedAt        time.Time `json:"updatedAt"`
 }
 
 type CreateInput struct {
-	PlanID     string
-	Contact    string
-	Email      string
-	Telegram   string
-	TelegramID int64
+	PlanID           string
+	Contact          string
+	Email            string
+	Telegram         string
+	TelegramID       int64
+	TelegramUsername string
 }
 
 type Store struct {
@@ -82,19 +84,20 @@ func (s *Store) Create(input CreateInput) (Checkout, error) {
 	}
 	now := time.Now().UTC()
 	checkout := Checkout{
-		ID:              newID(),
-		PlanID:          plan.ID,
-		PlanName:        plan.Name,
-		PriceRUB:        plan.PriceRUB,
-		Contact:         strings.TrimSpace(input.Contact),
-		Email:           strings.TrimSpace(input.Email),
-		Telegram:        strings.TrimSpace(input.Telegram),
-		TelegramID:      input.TelegramID,
-		Status:          StatusPaidStub,
-		PaymentProvider: "online",
-		PaymentMessage:  "Оплата подтверждена. Доступ активирован автоматически.",
-		CreatedAt:       now,
-		UpdatedAt:       now,
+		ID:               newID(),
+		PlanID:           plan.ID,
+		PlanName:         plan.Name,
+		PriceRUB:         plan.PriceRUB,
+		Contact:          strings.TrimSpace(input.Contact),
+		Email:            strings.TrimSpace(input.Email),
+		Telegram:         strings.TrimSpace(input.Telegram),
+		TelegramID:       input.TelegramID,
+		TelegramUsername: strings.TrimSpace(input.TelegramUsername),
+		Status:           StatusPaidStub,
+		PaymentProvider:  "online",
+		PaymentMessage:   "Оплата подтверждена. Доступ активирован автоматически.",
+		CreatedAt:        now,
+		UpdatedAt:        now,
 	}
 
 	s.mu.Lock()

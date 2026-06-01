@@ -138,13 +138,15 @@ func (s *Server) handleCheckout(w http.ResponseWriter, r *http.Request) {
 	// напрямую. initData опционален: при оплате из браузера он пустой, и заявка
 	// оформляется как обычно, без привязки к Telegram.
 	var telegramID int64
+	var telegramUsername string
 	if req.InitData != "" {
-		id, err := telegram.ValidateInitData(req.InitData, s.cfg.TelegramBotToken, initDataMaxAge)
+		user, err := telegram.ValidateInitData(req.InitData, s.cfg.TelegramBotToken, initDataMaxAge)
 		if err != nil {
 			writeError(w, http.StatusBadRequest, "bad_init_data", "Откройте оплату через бота в Telegram.")
 			return
 		}
-		telegramID = id
+		telegramID = user.ID
+		telegramUsername = user.Username
 	}
 
 	if telegramID == 0 && req.Email == "" && req.Telegram == "" {
@@ -156,11 +158,12 @@ func (s *Server) handleCheckout(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 
 	result, err := s.checkout.Start(provisionCtx, checkout.CreateInput{
-		PlanID:     req.PlanID,
-		Contact:    firstNonEmpty(req.Telegram, req.Email, req.Contact),
-		Email:      req.Email,
-		Telegram:   req.Telegram,
-		TelegramID: telegramID,
+		PlanID:           req.PlanID,
+		Contact:          firstNonEmpty(req.Telegram, req.Email, req.Contact),
+		Email:            req.Email,
+		Telegram:         req.Telegram,
+		TelegramID:       telegramID,
+		TelegramUsername: telegramUsername,
 	})
 	if err != nil {
 		s.writeCheckoutError(w, result, err)
