@@ -187,6 +187,14 @@ func (s *Server) writeCheckoutError(w http.ResponseWriter, result checkout.Check
 				"message": "Автоматическая выдача временно недоступна. Напишите в поддержку, и мы поможем оформить доступ.",
 			},
 		})
+	case errors.Is(err, checkout.ErrTrialAlreadyUsed):
+		writeJSON(w, http.StatusConflict, map[string]any{
+			"checkout": newCheckoutResponse(result),
+			"error": map[string]string{
+				"code":    "trial_already_used",
+				"message": "Пробный период уже активирован на этом Telegram-аккаунте — повторно бесплатный доступ выдать нельзя. Оформите платный тариф, чтобы продолжить пользоваться доступом.",
+			},
+		})
 	case errors.Is(err, checkout.ErrUnknownPlan):
 		writeError(w, http.StatusBadRequest, "unknown_plan", "Такой тариф не найден.")
 	default:

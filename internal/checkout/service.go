@@ -14,7 +14,15 @@ import (
 var (
 	ErrRemnawaveNotConfigured = errors.New("remnawave not configured")
 	ErrSubscriptionURLMissing = errors.New("remnawave returned empty subscription URL")
+	// ErrTrialAlreadyUsed возвращается, когда для этого Telegram ID уже есть
+	// пользователь панели, а оформляется бесплатный пробный тариф. Повторный
+	// бесплатный доступ не выдаём — пользователю предлагается купить подписку.
+	ErrTrialAlreadyUsed = errors.New("trial already used for this telegram id")
 )
+
+// trialAlreadyUsedMessage — текст для пользователя при попытке оформить второй
+// бесплатный пробник на тот же Telegram-аккаунт.
+const trialAlreadyUsedMessage = "Пробный период уже активирован на этом Telegram-аккаунте — повторно бесплатный доступ выдать нельзя. Оформите платный тариф, чтобы продолжить пользоваться доступом."
 
 type ServiceConfig struct {
 	RemnawaveTag         string
@@ -73,15 +81,31 @@ func (s *Service) Provision(ctx context.Context, checkout Checkout) (Checkout, e
 		return checkout, ErrUnknownPlan
 	}
 
-	// Если оформление пришло из Telegram Mini App (есть проверенный Telegram ID),
-	// продлеваем существующего пользователя вместо создания дубля.
+	// Если оформление пришло из Telegram Mini App (есть проверенный Telegram ID)
+	// и для этого аккаунта уже есть пользователь панели:
+	//   - бесплатный пробник повторно не выдаём (предлагаем купить подписку);
+	//   - платный тариф продлеваем у существующего пользователя без дублей.
 	if checkout.TelegramID != 0 {
 		if existing, ok := s.findRenewableUser(ctx, checkout.TelegramID); ok {
+			if plan.ID == TrialPlanID {
+				updated, err := s.markFailed(checkout.ID, trialAlreadyUsedMessage)
+				if err != nil {
+					return updated, errors.Join(ErrTrialAlreadyUsed, err)
+				}
+				return updated, ErrTrialAlreadyUsed
+			}
 			return s.renew(ctx, checkout, plan, existing)
 		}
 	}
 
-	username := remnawave.SuggestedUsername(firstNonEmpty(checkout.Telegram, checkout.Email, checkout.Contact, checkout.ID))
+	// Для Telegram-аккаунта имя детерминировано (tg_<id>) — без случайного
+	// суффикса; для оформления из браузера оставляем уникальный suggested-вариант.
+	var username string
+	if checkout.TelegramID != 0 {
+		username = remnawave.TelegramUsername(checkout.TelegramID)
+	} else {
+		username = remnawave.SuggestedUsername(firstNonEmpty(checkout.Email, checkout.Contact, checkout.ID))
+	}
 	email := strings.TrimSpace(checkout.Email)
 	var emailPtr *string
 	if email != "" {

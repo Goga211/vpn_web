@@ -90,7 +90,11 @@ export function PricingPage() {
                     </div>
                     {plan.oldPriceRub ? (
                       <p className="plan-card-price-old">{formatPrice(plan.oldPriceRub)}</p>
-                    ) : null}
+                    ) : (
+                      <p className="plan-card-price-old is-placeholder" aria-hidden="true">
+                        &nbsp;
+                      </p>
+                    )}
                   </div>
                   <ul className="plan-card-features">
                     <li>

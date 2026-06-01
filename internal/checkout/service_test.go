@@ -166,6 +166,59 @@ func TestServiceRenewsExistingTelegramUser(t *testing.T) {
 	}
 }
 
+func TestServiceBlocksSecondTrialForKnownTelegramUser(t *testing.T) {
+	store, err := NewStore(t.TempDir())
+	if err != nil {
+		t.Fatalf("NewStore() error = %v", err)
+	}
+	client := &fakeRemnawaveClient{
+		enabled: true,
+		existingUsers: []remnawave.User{
+			{UUID: "uuid-1", Username: "tg_555", Status: "ACTIVE"},
+		},
+	}
+	service := NewService(store, client, ServiceConfig{RemnawaveTag: "WEB"})
+
+	got, err := service.Start(context.Background(), CreateInput{
+		PlanID:     TrialPlanID,
+		TelegramID: 555,
+	})
+	if !errors.Is(err, ErrTrialAlreadyUsed) {
+		t.Fatalf("Start() error = %v, want ErrTrialAlreadyUsed", err)
+	}
+	if got.Status != StatusFailed {
+		t.Fatalf("status = %q, want %q", got.Status, StatusFailed)
+	}
+	if got.ProvisionError == "" {
+		t.Fatalf("provision error message is empty, want user-facing message")
+	}
+	if client.createCalls != 0 {
+		t.Fatalf("create calls = %d, want 0 (no second trial)", client.createCalls)
+	}
+	if client.updateCalls != 0 {
+		t.Fatalf("update calls = %d, want 0 (trial must not renew)", client.updateCalls)
+	}
+}
+
+func TestServiceUsesDeterministicTelegramUsernameForNewUser(t *testing.T) {
+	store, err := NewStore(t.TempDir())
+	if err != nil {
+		t.Fatalf("NewStore() error = %v", err)
+	}
+	client := &fakeRemnawaveClient{enabled: true}
+	service := NewService(store, client, ServiceConfig{RemnawaveTag: "WEB"})
+
+	if _, err := service.Start(context.Background(), CreateInput{
+		PlanID:     "month",
+		TelegramID: 12345,
+	}); err != nil {
+		t.Fatalf("Start() error = %v", err)
+	}
+	if client.createRequest.Username != "tg_12345" {
+		t.Fatalf("username = %q, want tg_12345 (no random suffix)", client.createRequest.Username)
+	}
+}
+
 func TestServicePassesTelegramIDWhenCreatingNewUser(t *testing.T) {
 	store, err := NewStore(t.TempDir())
 	if err != nil {

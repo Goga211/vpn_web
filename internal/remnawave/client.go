@@ -294,6 +294,13 @@ func decodeResponse(resp *http.Response, out any) error {
 	return nil
 }
 
+// TelegramUsername возвращает детерминированное имя пользователя панели для
+// Telegram-аккаунта: один Telegram ID — одно имя, без случайного суффикса.
+// Это позволяет находить пользователя по имени и не плодить дубли.
+func TelegramUsername(telegramID int64) string {
+	return fmt.Sprintf("tg_%d", telegramID)
+}
+
 func SuggestedUsername(seed string) string {
 	clean := strings.ToLower(seed)
 	var b strings.Builder

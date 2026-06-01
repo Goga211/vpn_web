@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import {
   AlertCircle,
   ArrowRight,
@@ -31,6 +32,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 type AccessDialog =
   | { type: 'success'; checkout: Checkout; payment?: Payment }
   | { type: 'failure'; checkout?: Checkout; message: string }
+  | { type: 'offer'; checkout?: Checkout; message: string }
 
 const includedItems: Array<{ label: string; render?: (plan: Plan) => string }> = [
   { label: 'Период доступа', render: (p) => p.period },
@@ -142,7 +144,11 @@ export function CheckoutSection({ initialPlanId }: { initialPlanId?: string }) {
       setFieldErrors({})
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Не удалось выпустить доступ'
-      if (error instanceof CheckoutApiError && error.checkout) {
+      if (error instanceof CheckoutApiError && error.code === 'trial_already_used') {
+        // Пробный уже использован на этом Telegram-аккаунте — показываем
+        // предложение оформить платный тариф вместо ошибки.
+        setDialog({ type: 'offer', checkout: error.checkout, message })
+      } else if (error instanceof CheckoutApiError && error.checkout) {
         setDialog({ type: 'failure', checkout: error.checkout, message })
       }
       setFormStatus({ kind: 'error', message })
@@ -391,7 +397,7 @@ function PlanSelect({
 }: {
   plans: Plan[]
   value: string
-  onChange: (planId: string) => voidand committing changes features
+  onChange: (planId: string) => void
 }) {
   const [open, setOpen] = useState(false)
   const rootRef = useRef<HTMLDivElement>(null)
@@ -403,7 +409,7 @@ function PlanSelect({
       if (!rootRef.current?.contains(event.target as Node)) setOpen(false)
     }
     function onKey(event: KeyboardEvent) {
-      if (event.key === 'Escape') setOpen(false)and committing changes features
+      if (event.key === 'Escape') setOpen(false)
     }
     document.addEventListener('pointerdown', onPointer)
     document.addEventListener('keydown', onKey)
@@ -489,10 +495,16 @@ function AccessModal({
 
   const checkout = dialog.checkout
   const success = dialog.type === 'success' && Boolean(checkout?.subscriptionUrl)
+  const offer = dialog.type === 'offer'
   const message =
     dialog.type === 'success'
       ? dialog.payment?.message || 'Доступ активирован. Ссылка подписки готова.'
       : dialog.message
+  const title = success
+    ? 'Доступ готов'
+    : offer
+      ? 'Пробный уже активирован'
+      : 'Выдача не прошла'
 
   async function copySubscription() {
     if (!checkout?.subscriptionUrl) return
@@ -511,9 +523,7 @@ function AccessModal({
     >
       <div className="dialog">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16 }}>
-          <h2 id="access-dialog-title">
-            {success ? 'Доступ готов' : 'Выдача не прошла'}
-          </h2>
+          <h2 id="access-dialog-title">{title}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -564,6 +574,17 @@ function AccessModal({
                 Открыть подписку
                 <ArrowRight size={14} aria-hidden="true" />
               </a>
+            </>
+          ) : offer ? (
+            <>
+              <a className="btn btn-secondary" href={supportUrl} target="_blank" rel="noreferrer">
+                <Mail size={14} aria-hidden="true" />
+                Поддержка
+              </a>
+              <Link className="btn btn-primary" to="/pricing" onClick={onClose}>
+                Выбрать тариф
+                <ArrowRight size={14} aria-hidden="true" />
+              </Link>
             </>
           ) : (
             <a className="btn btn-primary" href={supportUrl} target="_blank" rel="noreferrer">
