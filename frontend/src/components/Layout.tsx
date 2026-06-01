@@ -16,10 +16,14 @@ export function SiteHeader() {
   const location = useLocation()
   const ThemeIcon = theme === 'dark' ? Sun : Moon
 
-  // close the mobile menu on route change
-  useEffect(() => {
+  // Закрываем мобильное меню при смене маршрута. Корректировка состояния во время
+  // рендера — рекомендованный React способ (без каскадных ререндеров от setState
+  // в useEffect), он же используется в CheckoutSection.
+  const [lastPath, setLastPath] = useState(location.pathname)
+  if (location.pathname !== lastPath) {
+    setLastPath(location.pathname)
     setMenuOpen(false)
-  }, [location.pathname])
+  }
 
   // lock body scroll + Escape to close while the drawer is open
   useEffect(() => {
