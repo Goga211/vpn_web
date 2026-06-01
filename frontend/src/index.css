@@ -581,7 +581,7 @@ button:focus-visible, a:focus-visible { border-radius: inherit; }
 
 .plan-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-top: 48px; }
 @media (min-width: 640px) { .plan-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 980px) { .plan-grid { grid-template-columns: repeat(4, 1fr); align-items: start; } }
+@media (min-width: 980px) { .plan-grid { grid-template-columns: repeat(4, 1fr); align-items: stretch; } }
 
 .plan-card {
   position: relative;
