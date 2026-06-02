@@ -11,11 +11,25 @@
     />
     <link rel="icon" href="./assets/logo.svg" type="image/svg+xml" />
     <title>Nimbus — цифровая подписка</title>
-    <script type="module" crossorigin src="./assets/index-DALiTrGV.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DxmjDiT0.css">
+    <script type="module" crossorigin src="./assets/index-BFWq1Vpo.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-Bucucm88.css">
   </head>
   <body>
-    <div id="root"></div>
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <div id="root">
+      <!-- Видимый запасной экран до старта React. Если бандл вообще не выполнится
+           (старый WebView, обрыв сети), пользователь увидит текст, а не серое
+           полотно. React заменит это содержимое при первом рендере. -->
+      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;color:#8a8780;text-align:center">
+        <div>
+          <p style="font-size:15px;margin:0">Загрузка…</p>
+          <noscript>Для работы страницы включите JavaScript.</noscript>
+        </div>
+      </div>
+    </div>
+    <!-- SDK Telegram хостим у себя: внешний https://telegram.org/js/telegram-web-app.js
+         блокирует рендер и может быть недоступен в сетях с DPI у части пользователей,
+         из-за чего Mini App зависает на сером экране. Локальный файл same-origin
+         грузится надёжно и тоже покрыт CSP. -->
+    <script src="./telegram-web-app.js"></script>
   </body>
 </html>

@@ -9,7 +9,7 @@ import "net/http"
 // frame-ancestors — встраиванием управляет CSP.
 const securityCSP = "default-src 'self'; " +
 	"script-src 'self' https://telegram.org; " +
-	"style-src 'self'; " +
+	"style-src 'self' 'unsafe-inline'; " +
 	"img-src 'self' data:; " +
 	"connect-src 'self'; " +
 	"frame-ancestors https://web.telegram.org https://telegram.org; " +

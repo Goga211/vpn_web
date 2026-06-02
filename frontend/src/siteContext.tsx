@@ -15,11 +15,30 @@ type SiteContextValue = {
 
 const SiteContext = createContext<SiteContextValue | null>(null)
 
+// localStorage и matchMedia могут быть недоступны во встроенном WebView (приватный
+// режим, запрет хранилища) и бросать SecurityError. Любой такой бросок здесь — это
+// синхронный краш в инициализаторе useState, то есть серый экран. Поэтому всё под
+// try/catch с безопасными значениями по умолчанию.
+function readStoredTheme(): Theme | null {
+  try {
+    const saved = window.localStorage.getItem('site-theme')
+    return saved === 'light' || saved === 'dark' ? saved : null
+  } catch {
+    return null
+  }
+}
+
+function prefersDark(): boolean {
+  try {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  } catch {
+    return false
+  }
+}
+
 function getInitialTheme(): Theme {
   if (typeof window === 'undefined') return 'light'
-  const saved = window.localStorage.getItem('site-theme')
-  if (saved === 'light' || saved === 'dark') return saved
-  return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+  return readStoredTheme() ?? (prefersDark() ? 'dark' : 'light')
 }
 
 export function SiteProvider({ children }: { children: ReactNode }) {
@@ -30,7 +49,12 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     document.documentElement.dataset.theme = theme
     document.documentElement.style.colorScheme = theme
-    window.localStorage.setItem('site-theme', theme)
+    try {
+      window.localStorage.setItem('site-theme', theme)
+    } catch {
+      // Запись в хранилище может быть запрещена — тема просто не сохранится между
+      // сессиями, но приложение продолжит работать.
+    }
   }, [theme])
 
   useEffect(() => {
