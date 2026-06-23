@@ -15,13 +15,13 @@ export const fallbackPlans: Plan[] = [
   {
     id: 'trial',
     name: 'Пробный период',
-    period: '30 дней',
+    period: '7 дней',
     months: 0,
     priceRub: 0,
     trafficLimitGb: 100,
     devices: 2,
-    highlight: '30 дней, чтобы попробовать без оплаты',
-    provisionDuration: '720h0m0s',
+    highlight: '7 дней, чтобы попробовать без оплаты',
+    provisionDuration: '168h0m0s',
   },
   {
     id: 'month',

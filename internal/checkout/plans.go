@@ -22,13 +22,13 @@ var Plans = []Plan{
 	{
 		ID:                TrialPlanID,
 		Name:              "Пробный период",
-		Period:            "30 дней",
+		Period:            "7 дней",
 		Months:            0,
 		PriceRUB:          0,
 		TrafficLimitGB:    100,
 		Devices:           2,
-		Highlight:         "30 дней для проверки скорости",
-		ProvisionDuration: (30 * 24 * time.Hour).String(),
+		Highlight:         "7 дней для проверки скорости",
+		ProvisionDuration: (7 * 24 * time.Hour).String(),
 	},
 	{
 		ID:                "month",

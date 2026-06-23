@@ -42,7 +42,7 @@ export function Hero() {
         <div data-reveal>
           <span className="hero-pill">
             <span className="pill-badge">NEW</span>
-            Пробный период — 30 дней без оплаты
+            Пробный период — 7 дней без оплаты
           </span>
           <h1 className="hero-title">
             Подписка, которая <span className="accent">просто работает</span>
@@ -65,7 +65,7 @@ export function Hero() {
           <div className="hero-product-card">
             <div>
               <p className="card-eyebrow">Текущий план</p>
-              <p className="card-headline">30 дней пробного периода</p>
+              <p className="card-headline">7 дней пробного периода</p>
               <span className="card-status">
                 <BadgeCheck size={14} aria-hidden="true" />
                 Доступ активен
@@ -318,7 +318,7 @@ const homeFaqs = [
   },
   {
     question: 'Можно ли попробовать бесплатно?',
-    answer: 'Да, 30 дней пробного периода без оплаты — без привязки карты и обязательств.',
+    answer: 'Да, 7 дней пробного периода без оплаты — без привязки карты и обязательств.',
   },
   {
     question: 'Какая скорость и качество канала?',
